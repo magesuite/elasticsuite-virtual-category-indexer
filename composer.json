@@ -1,0 +1,15 @@
+{
+  "name": "creativestyle/magesuite-elasticsuite-virtual-category-indexer",
+  "description": "ElasticSuite Virtual Category Indexer",
+  "homepage": "https://creativestyle.de",
+  "license": "OSL-3.0",
+  "type": "magento2-module",
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "MageSuite\\OnboardingIjozwiak\\": ""
+    }
+  }
+}

@@ -1,0 +1,12 @@
+stages:
+  - codesniffer
+
+default:
+  image: composer:latest
+
+phpcs:
+  stage: codesniffer
+  script:
+    - mkdir phpcs
+    - cd phpcs && composer require creativestyle/magesuite-coding-standards
+    - cd ../ && phpcs/vendor/bin/phpcs --standard=phpcs/vendor/creativestyle/magesuite-coding-standards/MageSuite --ignore=phpcs/ ./

@@ -1,0 +1,2 @@
+
+# ElasticSuite Virtual Category Indexer
