@@ -2,7 +2,9 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/Module/etc/module.xsd">
     <module name="MageSuite_ElasticsuiteVirtualCategoryIndexer" setup_version="1.0.0">
         <sequence>
+            <module name="Magento_Catalog" />
             <module name="Smile_ElasticsuiteCatalog" />
+            <module name="Smile_ElasticsuiteVirtualCategory" />
         </sequence>
     </module>
 </config>

@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="index">
+        <job name="send_email_to_customer_support"
+             instance="MageSuite\ElasticsuiteVirtualCategoryIndexer\Cron\VirtualCategoryIndexer" method="execute">
+            <schedule>
+                <config_path>virtual_category_indexer/cron/schedule</config_path>
+            </schedule>
+        </job>
+    </group>
+</config>

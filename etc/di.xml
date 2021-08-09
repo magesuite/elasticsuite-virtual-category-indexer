@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <preference for="MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Service\VirtualCategoryIndexer" />
+    <preference for="Magento\Catalog\Model\ResourceModel\Category\Collection"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\Model\ResourceModel\Category\Collection" />
+    <preference for="Magento\Catalog\Model\ResourceModel\CategoryProduct"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\Model\ResourceModel\CategoryProduct" />
+    <preference for="Smile\ElasticsuiteVirtualCategory\Controller\Adminhtml\Category\Virtual\Preview"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Controller\ElasticsuiteVirtualCategory\Controller\Adminhtml\Category\Virtual\Preview" />
+    <preference for="Smile\ElasticsuiteVirtualCategory\Model\Preview"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ElasticsuiteVirtualCategory\Model\Preview" />
+
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="elasticsearch_virtual_category_indexer" xsi:type="object">MageSuite\ElasticsuiteVirtualCategoryIndexer\Console\Command\VirtualCategoryIndexer</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface">
+        <arguments>
+            <argument name="strategies" xsi:type="array">
+                <item name="full" xsi:type="string">executeFull</item>
+                <item name="list" xsi:type="string">executeList</item>
+                <item name="category" xsi:type="string">executeRow</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Smile\ElasticsuiteVirtualCategory\Model\Rule">
+        <plugin name="elasticsute_get_search_category_query"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtualCategory\Model\Rule\GetCategorySearchQuery"
+                sortOrder="1"/>
+    </type>
+
+    <type name="Magento\Catalog\Model\Category">
+        <plugin name="magesuite_elasticsuite_virtual_categories_reindex_on_change"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\ReindexOnChange" sortOrder="1" />
+    </type>
+
+</config>
+
