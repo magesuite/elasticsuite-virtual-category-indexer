@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="MageSuite_ElasticsuiteVirtualCategoryIndexer::admin">
+                <resource id="MageSuite_ElasticsuiteVirtualCategoryIndexer::config_virtual_category_indexer"
+                          title="Virtual Category Indexer"
+                          translate="title"
+                          sortOrder="0">
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>
