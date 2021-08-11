@@ -122,7 +122,7 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         $strategy = $this->getStrategy($input, $output);
         $categoryIds = (array) $this->getCategoryIds($strategy, $input, $output);
 
-        $this->virtualCategoryIndexerServiceFactory->setStrategy($strategy)
+        $this->virtualCategoryIndexerService->setStrategy($strategy)
             ->setCategoryIds($categoryIds)
             ->execute();
     }
