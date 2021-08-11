@@ -23,6 +23,11 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
     protected $virtualCategoryIndexerService;
 
     /**
+     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterfaceFactory
+     */
+    protected $virtualCategoryIndexerServiceFactory;
+
+    /**
      * @var \Symfony\Component\Console\Input\InputInterface
      */
     protected $input;
@@ -39,7 +44,7 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
 
     public function __construct(
         \Magento\Framework\App\State $state,
-        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface $virtualCategoryIndexerService,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterfaceFactory $virtualCategoryIndexerServiceFactory,
         \Psr\Log\LoggerInterface $logger,
         string $name = null
     ) {
@@ -47,7 +52,7 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
 
         $this->logger = $logger;
         $this->state = $state;
-        $this->virtualCategoryIndexerService = $virtualCategoryIndexerService;
+        $this->virtualCategoryIndexerServiceFactory = $virtualCategoryIndexerServiceFactory;
     }
 
     /**
@@ -93,6 +98,7 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         }
 
         try {
+            $this->virtualCategoryIndexerService = $this->virtualCategoryIndexerServiceFactory->create();
             $this->state->emulateAreaCode(
                 \Magento\Framework\App\Area::AREA_ADMINHTML,
                 [$this, 'runIndexer'],
