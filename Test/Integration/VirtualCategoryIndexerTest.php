@@ -87,7 +87,6 @@ class VirtualCategoryIndexerTest extends \PHPUnit\Framework\TestCase
         $this->categoryModel->setVirtualCategoryRoot($virtualCategoryRootId);
         $this->categoryModel->save();
         $this->categoryModel->setIsChangedProductList(true);
-        $this->categoryModel->reindex();
     }
 
     /**

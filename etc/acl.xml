@@ -3,11 +3,15 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
     <acl>
         <resources>
-            <resource id="MageSuite_ElasticsuiteVirtualCategoryIndexer::admin">
-                <resource id="MageSuite_ElasticsuiteVirtualCategoryIndexer::config_virtual_category_indexer"
-                          title="Virtual Category Indexer"
-                          translate="title"
-                          sortOrder="0">
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="MageSuite_ElasticsuiteVirtualCategoryIndexer::config_virtual_category_indexer"
+                                      title="MageSuite Elasticsearch  Virtual Category Indexer">
+                            </resource>
+                        </resource>
+                    </resource>
                 </resource>
             </resource>
         </resources>

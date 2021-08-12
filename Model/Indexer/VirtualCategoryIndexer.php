@@ -41,8 +41,6 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
      */
     protected $indexerFactory;
 
-    protected $isEnabled = null;
-
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
      */
