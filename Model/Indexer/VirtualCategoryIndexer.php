@@ -31,6 +31,8 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
      */
     protected $categoryCollectionFactory;
 
+    protected $categoryIds = [];
+
     /**
      * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration
      */
@@ -40,6 +42,8 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
      * @var \Magento\Indexer\Model\IndexerFactory
      */
     protected $indexerFactory;
+
+    protected $productIds = [];
 
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
@@ -105,6 +109,8 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         foreach ($categoryIds as $categoryId) {
             $this->reindex((int) $categoryId);
         }
+
+        $this->reindexCategoryProduct();
     }
 
     /*
@@ -118,6 +124,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         }
 
         $this->reindex($categoryId);
+        $this->reindexCategoryProduct();
     }
 
     /**
@@ -137,17 +144,13 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             }
 
             if ($currentProductIds) {
-                $this->reindexCategoryProduct($categoryId, $currentProductIds);
+                $this->productIds = array_unique(array_merge($this->productIds, $currentProductIds));
+                $this->categoryIds[] = $categoryId;
             }
         } finally {
-            $category->setData(
-                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE,
-                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_NOT_REQUIRED
-            )->setStoreId(0);
-            $category->getResource()->saveAttribute(
-                $category,
-                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE
-            );
+            if (isset($category)) {
+                $this->setVirtualCategoryReindexAttributeToFalse($category);
+            }
         }
     }
 
@@ -176,18 +179,37 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
      * @param int $categoryId
      * @param array $currentProductIds
      */
-    protected function reindexCategoryProduct($categoryId, $currentProductIds): void
+    protected function reindexCategoryProduct(): void
     {
-        $indexer = $this->indexerFactory->create();
-        $indexer->load(\Magento\Catalog\Model\Indexer\Category\Product::INDEXER_ID);
-        $indexer->reindexRow($categoryId);
+        foreach ($this->categoryIds as $categoryId) {
+            $indexer = $this->indexerFactory->create();
+            $indexer->load(\Magento\Catalog\Model\Indexer\Category\Product::INDEXER_ID);
+            $indexer->reindexRow($categoryId);
+        }
 
         $indexer = $this->indexerFactory->create();
         $indexer->load(\Magento\CatalogSearch\Model\Indexer\Fulltext::INDEXER_ID);
-        $indexer->reindexList($currentProductIds);
+        $indexer->reindexList($this->productIds);
 
-        $indexer = $this->indexerFactory->create();
-        $indexer->load(\Smile\ElasticsuiteCatalog\Model\Category\Indexer\Fulltext::INDEXER_ID);
-        $indexer->reindexRow($categoryId);
+        foreach ($this->categoryIds as $categoryId) {
+            $indexer = $this->indexerFactory->create();
+            $indexer->load(\Smile\ElasticsuiteCatalog\Model\Category\Indexer\Fulltext::INDEXER_ID);
+            $indexer->reindexRow($categoryId);
+        }
+    }
+
+    /**
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
+     */
+    protected function setVirtualCategoryReindexAttributeToFalse(\Magento\Catalog\Api\Data\CategoryInterface $category): void
+    {
+        $category->setData(
+            \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE,
+            \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_NOT_REQUIRED
+        )->setStoreId(0);
+        $category->getResource()->saveAttribute(
+            $category,
+            \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE
+        );
     }
 }
