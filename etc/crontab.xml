@@ -5,7 +5,7 @@
         <job name="send_email_to_customer_support"
              instance="MageSuite\ElasticsuiteVirtualCategoryIndexer\Cron\VirtualCategoryIndexer" method="execute">
             <schedule>
-                <config_path>virtual_category_indexer/cron/schedule</config_path>
+                <config_path>virtual_category_indexer/general/schedule</config_path>
             </schedule>
         </job>
     </group>
