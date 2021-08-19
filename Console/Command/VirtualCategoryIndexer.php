@@ -13,6 +13,11 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
     protected const ID_QUESTION_MESSAGE = 'Provide correct category id';
 
     /**
+     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\ConfigurationFactory
+     */
+    protected $configurationFactory;
+
+    /**
      * @var \Psr\Log\LoggerInterface
      */
     protected $logger;
@@ -45,11 +50,13 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
     public function __construct(
         \Magento\Framework\App\State $state,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterfaceFactory $virtualCategoryIndexerServiceFactory,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\ConfigurationFactory $configurationFactory,
         \Psr\Log\LoggerInterface $logger,
         string $name = null
     ) {
         parent::__construct($name);
 
+        $this->configurationFactory = $configurationFactory;
         $this->logger = $logger;
         $this->state = $state;
         $this->virtualCategoryIndexerServiceFactory = $virtualCategoryIndexerServiceFactory;
@@ -93,8 +100,10 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         \Symfony\Component\Console\Output\OutputInterface $output
     ) {
         $this->virtualCategoryIndexerService = $this->virtualCategoryIndexerServiceFactory->create();
+        $configuration = $this->configurationFactory->create();
 
-        if (!$this->virtualCategoryIndexerService->isEnabled()) {
+        if (!$configuration->isEnabled()) {
+
             $output->writeln("Module is disabled in store configuration");
             return;
         }
