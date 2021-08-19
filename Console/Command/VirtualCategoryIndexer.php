@@ -92,13 +92,14 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         \Symfony\Component\Console\Input\InputInterface $input,
         \Symfony\Component\Console\Output\OutputInterface $output
     ) {
+        $this->virtualCategoryIndexerService = $this->virtualCategoryIndexerServiceFactory->create();
+
         if (!$this->virtualCategoryIndexerService->isEnabled()) {
             $output->writeln("Module is disabled in store configuration");
             return;
         }
 
         try {
-            $this->virtualCategoryIndexerService = $this->virtualCategoryIndexerServiceFactory->create();
             $this->state->emulateAreaCode(
                 \Magento\Framework\App\Area::AREA_ADMINHTML,
                 [$this, 'runIndexer'],
