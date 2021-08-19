@@ -79,12 +79,4 @@ class VirtualCategoryIndexer implements \MageSuite\ElasticsuiteVirtualCategoryIn
     {
         return $this->indexer->{$this->strategy}($this->categoryIds);
     }
-
-    /**
-     * @return bool
-     */
-    public function isEnabled(): bool
-    {
-        return $this->indexer->isEnabled();
-    }
 }

@@ -30,9 +30,4 @@ interface VirtualCategoryIndexerInterface
      * @return VirtualCategoryIndexerInterface
      */
     public function setCategoryIds(?array $categoryIds);
-
-    /**
-     * @return bool
-     */
-    public function isEnabled(): bool;
 }
