@@ -103,7 +103,6 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         $configuration = $this->configurationFactory->create();
 
         if (!$configuration->isEnabled()) {
-
             $output->writeln("Module is disabled in store configuration");
             return;
         }

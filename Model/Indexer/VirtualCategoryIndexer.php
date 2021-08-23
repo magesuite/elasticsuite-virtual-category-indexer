@@ -93,7 +93,11 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         }
 
         $categoryIds =  $this->categoryCollectionFactory->create()->getAllVirtualCategoryIds();
-        $this->executeList($categoryIds);
+
+        foreach ($categoryIds as $categoryId) {
+            $this->reindex((int) $categoryId);
+        }
+
     }
 
     /*
@@ -104,10 +108,6 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
     {
         if (!$this->configuration->isEnabled()) {
             return;
-        }
-
-        foreach ($categoryIds as $categoryId) {
-            $this->reindex((int) $categoryId);
         }
 
         $this->reindexCategoryProduct();

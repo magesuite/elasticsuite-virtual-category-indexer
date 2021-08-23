@@ -7,7 +7,6 @@
         <description translate="true">Indexing virtual category as normal category</description>
         <dependencies>
             <indexer id="catalog_category_product" />
-            <indexer id="catalogsearch_fulltext" />
             <indexer id="elasticsuite_categories_fulltext" />
         </dependencies>
     </indexer>
