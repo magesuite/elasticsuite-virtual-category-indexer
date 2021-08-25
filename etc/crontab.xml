@@ -3,10 +3,9 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="index">
         <job name="send_email_to_customer_support"
-             instance="MageSuite\ElasticsuiteVirtualCategoryIndexer\Cron\VirtualCategoryIndexer" method="execute">
-            <schedule>
-                <config_path>virtual_category_indexer/general/schedule</config_path>
-            </schedule>
+             instance="MageSuite\ElasticsuiteVirtualCategoryIndexer\Cron\VirtualCategoryIndexer"
+             method="execute">
+            <config_path>virtual_category_indexer/general/schedule</config_path>
         </job>
     </group>
 </config>
