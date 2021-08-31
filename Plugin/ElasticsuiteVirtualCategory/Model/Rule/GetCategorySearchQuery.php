@@ -24,9 +24,13 @@ class GetCategorySearchQuery
      */
     public function beforeGetCategorySearchQuery(
         \Smile\ElasticsuiteVirtualCategory\Model\Rule $subject,
-        \Magento\Catalog\Api\Data\CategoryInterface $category,
+        $category,
         array $excludedCategories = []
     ) {
+        if (!is_object($category)) {
+            return [$category, $excludedCategories];
+        }
+
         if ($this->configuration->isEnabled()) {
             $this->convertIsVirtualCategoryAttributeToNullIfIsVirtualQueryFalse($category);
         }
