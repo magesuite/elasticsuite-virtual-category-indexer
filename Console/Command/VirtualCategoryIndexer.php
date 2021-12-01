@@ -195,8 +195,10 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
     /**
      * @param string $message
      * @param string $param
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
      */
-    protected function callQuestion(
+    protected function callQuestion( // @codingStandardsIgnoreLine
         string $message,
         string $param,
         \Symfony\Component\Console\Input\InputInterface $input,

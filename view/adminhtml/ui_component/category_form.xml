@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="assign_products">
+        <button name="reindex_virtual_category">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="buttonClasses" xsi:type="string">reindex-category-button</item>
+                    <item name="sortOrder" xsi:type="number">11</item>
+                    <item name="actions" xsi:type="array">
+                        <item name="0" xsi:type="array">
+                            <item name="targetName" xsi:type="string">category_form.category_form_data_source</item>
+                            <item name="actionName" xsi:type="string">reindexVirtualCategory</item>
+                        </item>
+                    </item>
+                    <item name="imports" xsi:type="array">
+                        <item name="visible" xsi:type="string">category_form.category_form.assign_products.is_virtual_category:checked</item>
+                    </item>
+                    <item name="listens" xsi:type="array">
+                        <item name="${ $.namespace }.${ $.namespace }:responseData" xsi:type="string">setParsed</item>
+                    </item>
+                </item>
+            </argument>
+            <settings>
+                <title translate="true">Reindex virtual category assignments</title>
+            </settings>
+        </button>
+
+    </fieldset>
+</form>

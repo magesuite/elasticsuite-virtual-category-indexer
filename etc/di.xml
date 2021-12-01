@@ -37,6 +37,13 @@
                 sortOrder="1"/>
     </type>
 
+    <type name="Magento\Catalog\Model\Category\DataProvider">
+        <plugin name="add_reindex_url_to_loaded_data"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Model\Category\DataProvider\AddReindexUrlToLoadedData"
+                sortOrder="10"
+        />
+    </type>
+
     <type name="Magento\Catalog\Model\Category">
         <plugin name="magesuite_elasticsuite_virtual_categories_reindex_on_change"
                 type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\ReindexOnChange" sortOrder="1" />

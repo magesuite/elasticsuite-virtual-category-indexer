@@ -13,12 +13,24 @@ class ReindexOnChange
      */
     protected $indexerRegistry;
 
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\CategoryProduct
+     */
     protected $catalogCategoryResourceModel;
 
-    public function __construct(\Magento\Framework\Indexer\IndexerRegistry $indexerRegistry, \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryResourceModel)
-    {
+    /**
+     * @var \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler
+     */
+    protected $saveHandler;
+
+    public function __construct(
+        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
+        \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryResourceModel,
+        \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler $saveHandler
+    ) {
         $this->indexerRegistry = $indexerRegistry;
         $this->catalogCategoryResourceModel = $catalogCategoryResourceModel;
+        $this->saveHandler = $saveHandler;
     }
 
     /**
@@ -51,7 +63,10 @@ class ReindexOnChange
      */
     public function beforeSave(\Magento\Catalog\Api\Data\CategoryInterface $subject)
     {
-        $virtualRuleChanged = $subject->getOrigData('virtual_rule') <=> $subject->getData('virtual_rule');
+        $category = clone $subject;
+        $this->saveHandler->execute($category);
+
+        $virtualRuleChanged = $subject->getOrigData('virtual_rule') <=> $category->getData('virtual_rule');
         $virtualCategoryRootChanged = $subject->getOrigData('virtual_category_root') <=> $subject->getData('virtual_category_root');
         $shouldBeReindex = $virtualRuleChanged || $virtualCategoryRootChanged;
 
