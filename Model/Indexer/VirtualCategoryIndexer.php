@@ -97,7 +97,6 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         foreach ($categoryIds as $categoryId) {
             $this->reindex((int) $categoryId);
         }
-
     }
 
     /*
