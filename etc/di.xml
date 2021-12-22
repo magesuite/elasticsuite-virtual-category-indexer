@@ -49,5 +49,10 @@
                 type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\ReindexOnChange" sortOrder="1" />
     </type>
 
+    <type name="Magento\Indexer\Model\Indexer\DependencyDecorator">
+        <plugin name="magesuite_elasticsuite_virtual_change_indexer_name_if_disabled"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Indexer\Model\Indexer\DependencyDecorator\ChangeIndexerNameIfDisabled" sortOrder="1" />
+    </type>
+
 </config>
 
