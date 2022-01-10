@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\Model\ResourceModel;
+namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel;
 
 class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProduct
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\Model\ResourceModel\Category;
+namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category;
 
 class Collection extends \Magento\Catalog\Model\ResourceModel\Category\Collection
 {
