@@ -6,6 +6,11 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category;
 
 class ReindexOnChange
 {
+    /**
+     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category
+     */
+    protected $categoryResourceModel;
+
     public $productIds;
 
     /**
@@ -24,12 +29,14 @@ class ReindexOnChange
     protected $saveHandler;
 
     public function __construct(
-        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
         \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryResourceModel,
+        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
         \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler $saveHandler
     ) {
-        $this->indexerRegistry = $indexerRegistry;
         $this->catalogCategoryResourceModel = $catalogCategoryResourceModel;
+        $this->categoryResourceModel = $categoryResourceModel;
+        $this->indexerRegistry = $indexerRegistry;
         $this->saveHandler = $saveHandler;
     }
 
@@ -71,10 +78,7 @@ class ReindexOnChange
         $shouldBeReindex = $virtualRuleChanged || $virtualCategoryRootChanged;
 
         if ($shouldBeReindex) {
-            $subject->setData(
-                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE,
-                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED
-            );
+            $this->categoryResourceModel->setReindexRequired($subject);
         }
     }
 

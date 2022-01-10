@@ -12,17 +12,38 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
     protected $categoryRepository;
 
     /**
+     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category
+     */
+    protected $categoryResourceModel;
+
+    /**
+     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration
+     */
+    protected $configuration;
+
+    /**
      * @var \Magento\Framework\Controller\Result\JsonFactory
      */
     protected $jsonFactory;
 
+    /**
+     * @var \Magento\Backend\Model\Url
+     */
+    protected $urlBuilder;
+
     public function __construct(
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
         \Magento\Backend\App\Action\Context $context,
+        \Magento\Backend\Model\Url $urlBuilder,
         \Magento\Catalog\Model\CategoryRepository $categoryRepository,
         \Magento\Framework\Controller\Result\JsonFactory $jsonFactory
     ) {
-        $this->jsonFactory = $jsonFactory;
         $this->categoryRepository = $categoryRepository;
+        $this->categoryResourceModel = $categoryResourceModel;
+        $this->configuration = $configuration;
+        $this->jsonFactory = $jsonFactory;
+        $this->urlBuilder = $urlBuilder;
 
         parent::__construct($context);
     }
@@ -32,14 +53,46 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
      */
     public function execute()
     {
+
+        if ($this->configuration->isEnabled()) {
+            $responseData = $this->forceReindexRequiredStatus();
+        } else {
+            $responseData = [
+                'message' => __('Virtual category indexer is disabled. Enable it in <a href="%1" target="_blank">configuration</a>.', $this->getConfigurationUrl())
+            ];
+        }
+
+        $resultJson = $this->jsonFactory->create();
+
+        return $resultJson->setData($responseData);
+    }
+
+    /**
+     * @return array
+     */
+    protected function forceReindexRequiredStatus(): array
+    {
+        if (!$this->configuration->isEnabled()) {
+            $responseData = [
+                'message' => __('Forcing reindex was not successful.')
+            ];
+        } else {
+            $responseData = $this->forceReindex();
+        }
+
+        return $responseData;
+    }
+
+    /**
+     * @return array
+     */
+    protected function forceReindex(): array
+    {
         try {
             $categoryId = $this->getRequest()->getParam('id');
             $category = $this->categoryRepository->get($categoryId);
 
-            $category->setData(
-                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE,
-                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED
-            );
+            $this->categoryResourceModel->setReindexRequired($category);
 
             $this->categoryRepository->save($category);
 
@@ -51,9 +104,16 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
                 'message' => __('Forcing reindex was not successful.')
             ];
         }
+        return $responseData;
+    }
 
-        $resultJson = $this->jsonFactory->create();
-
-        return $resultJson->setData($responseData);
+    public function getConfigurationUrl()
+    {
+        return $this->urlBuilder->getUrl(
+            'adminhtml/system_config/edit/section/virtual_category_indexer',
+            [
+                '_secure' => true
+            ]
+        );
     }
 }

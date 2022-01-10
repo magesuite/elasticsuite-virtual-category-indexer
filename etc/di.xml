@@ -5,11 +5,11 @@
     <preference for="MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface"
                 type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Service\VirtualCategoryIndexer" />
     <preference for="Magento\Catalog\Model\ResourceModel\Category\Collection"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\Model\ResourceModel\Category\Collection" />
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category\Collection" />
     <preference for="Magento\Catalog\Model\ResourceModel\CategoryProduct"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\Model\ResourceModel\CategoryProduct" />
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\CategoryProduct" />
     <preference for="Smile\ElasticsuiteVirtualCategory\Controller\Adminhtml\Category\Virtual\Preview"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Controller\ElasticsuiteVirtualCategory\Controller\Adminhtml\Category\Virtual\Preview" />
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Controller\Adminhtml\Category\Virtual\Preview" />
     <preference for="Smile\ElasticsuiteVirtualCategory\Model\Preview"
                 type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ElasticsuiteVirtualCategory\Model\Preview" />
 

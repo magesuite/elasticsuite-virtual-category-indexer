@@ -34,6 +34,11 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
     protected $categoryIds = [];
 
     /**
+     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category
+     */
+    protected $categoryResourceModel;
+
+    /**
      * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration
      */
     protected $configuration;
@@ -51,18 +56,20 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
     protected $storeManager;
 
     public function __construct(
+        \Magento\Catalog\Model\Category $catalogCategoryModel,
         \Magento\Catalog\Model\CategoryRepository $categoryRepository,
         \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
-        \Magento\Catalog\Model\Category $catalogCategoryModel,
         \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryProductResourceModel,
         \Magento\Indexer\Model\IndexerFactory $indexerFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel
     ) {
-        $this->categoryRepository = $categoryRepository;
         $this->catalogCategoryModel = $catalogCategoryModel;
         $this->catalogCategoryProductResourceModel = $catalogCategoryProductResourceModel;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->categoryRepository = $categoryRepository;
+        $this->categoryResourceModel = $categoryResourceModel;
         $this->configuration = $configuration;
         $this->indexerFactory = $indexerFactory;
         $this->storeManager = $storeManager;
@@ -152,7 +159,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             }
         } finally {
             if (isset($category)) {
-                $this->setVirtualCategoryReindexAttributeToFalse($category);
+                $this->categoryResourceModel->setReindexRequired($category, false);
             }
         }
     }
@@ -199,20 +206,5 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             $indexer->load(\Smile\ElasticsuiteCatalog\Model\Category\Indexer\Fulltext::INDEXER_ID);
             $indexer->reindexRow($categoryId);
         }
-    }
-
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     */
-    protected function setVirtualCategoryReindexAttributeToFalse(\Magento\Catalog\Api\Data\CategoryInterface $category): void
-    {
-        $category->setData(
-            \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE,
-            \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_NOT_REQUIRED
-        )->setStoreId(0);
-        $category->getResource()->saveAttribute(
-            $category,
-            \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE
-        );
     }
 }

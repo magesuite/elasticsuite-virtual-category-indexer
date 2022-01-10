@@ -1,6 +1,6 @@
 <?php
 
-namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Controller\ElasticsuiteVirtualCategory\Controller\Adminhtml\Category\Virtual;
+namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Controller\Adminhtml\Category\Virtual;
 
 /**
  * Due to the need to add extesion attribute (virtual_query=true) in the loadCategory() method
