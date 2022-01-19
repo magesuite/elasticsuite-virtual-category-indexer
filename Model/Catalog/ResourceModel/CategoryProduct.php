@@ -93,7 +93,7 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
     }
 
     /**
-     * @param $categoryId
+     * @param string|int $categoryId
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -122,5 +122,98 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
     public function getOldProductIds()
     {
         return $this->oldProductsIds;
+    }
+
+    /**
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
+     * @param bool $isActive
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function assignProductsToParentCategory(\Magento\Catalog\Api\Data\CategoryInterface $category, bool $isActive): void
+    {
+        $parentCategories = $category->getParentCategories();
+
+        foreach ($parentCategories as $parentCategory) {
+
+            if ($parentCategory->getId() == $category->getId()) {
+                continue;
+            }
+
+            $this->removeVirtualCategoryProductsFromParentCategory($parentCategory, $category);
+
+            if ($isActive) {
+                $this->addVirtualCategoryProductsToParentCategory($parentCategory, $category);
+            }
+        }
+    }
+
+    /**
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $parentCategory
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    protected function removeVirtualCategoryProductsFromParentCategory(
+        \Magento\Catalog\Api\Data\CategoryInterface $parentCategory,
+        \Magento\Catalog\Api\Data\CategoryInterface $category
+    ): void {
+        $connection = $this->getConnection();
+
+        $cond = $connection->quoteInto('virtual_category_id = ?', $category->getId());
+        $cond .= $connection->quoteInto(' AND category_id = ?', $parentCategory->getId());
+
+        $connection->delete($this->getMainTable(), $cond);
+    }
+
+    /**
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $parentCategory
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    protected function addVirtualCategoryProductsToParentCategory(
+        \Magento\Catalog\Api\Data\CategoryInterface $parentCategory,
+        \Magento\Catalog\Api\Data\CategoryInterface $category
+    ): void {
+        $products = $this->getVirtualCategoryProducts($parentCategory, $category);
+
+        if (empty($products)) {
+            return;
+        }
+
+        $connection = $this->getConnection();
+        $connection->insertMultiple($this->getMainTable(), $products);
+    }
+
+    /**
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $parentCategory
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    protected function getVirtualCategoryProducts(
+        \Magento\Catalog\Api\Data\CategoryInterface $parentCategory,
+        \Magento\Catalog\Api\Data\CategoryInterface $category
+    ): array {
+        $connection = $this->getConnection();
+
+        $categories = [$parentCategory->getId(), $category->getId()];
+
+        $select = $connection->select()->from($this->getMainTable() . ' as e')
+            ->joinLeft(
+                $this->getMainTable() . ' as e2',
+                $connection->quoteInto('e2.category_id = ? and e2.product_id = e.product_id', $parentCategory->getId()),
+                ''
+            )
+            ->where('e.category_id = ?', $category->getId())
+            ->where('e2.product_id is null');
+
+        $products = $connection->fetchAll($select);
+
+        foreach ($products as &$product) {
+            unset($product['entity_id']);
+            $product['virtual_category_id'] = $category->getId();
+            $product['category_id'] = $parentCategory->getId();
+        }
+
+        return $products;
     }
 }

@@ -12,8 +12,7 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Category\Collectio
      */
     public function getAllVirtualCategoryIds(): array
     {
-        $this->addAttributeToFilter('is_virtual_category', ['eq' => 1])
-            ->addAttributeToFilter('is_active', 1);
+        $this->addAttributeToFilter('is_virtual_category', ['eq' => 1]);
 
         return $this->getAllIds();
     }

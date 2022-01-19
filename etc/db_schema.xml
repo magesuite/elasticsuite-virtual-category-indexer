@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="catalog_category_product" resource="default" engine="innodb" comment="Catalog Category Product Table">
+        <column xsi:type="int" name="virtual_category_id" unsigned="true" nullable="true" identity="false" comment="Virtual Category ID"/>
+    </table>
+</schema>

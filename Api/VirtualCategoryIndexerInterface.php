@@ -11,6 +11,7 @@ interface VirtualCategoryIndexerInterface
     public const STRATEGY_CATEGORY = 'category';
 
     public const VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE = 'virtual_category_reindex_required';
+    public const VIRTUAL_CATEGORY_ID = 'virtual_category_id';
     public const VIRTUAL_CATEGORY_REINDEX_REQUIRED = 1;
     public const VIRTUAL_CATEGORY_REINDEX_NOT_REQUIRED = 0;
 

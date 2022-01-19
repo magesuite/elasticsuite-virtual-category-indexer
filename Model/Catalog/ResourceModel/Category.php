@@ -54,7 +54,7 @@ class Category
                 \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE
             );
 
-            $affectedRows = $this->connection->getConnection()->update(
+            $this->connection->getConnection()->update(
                 $tableName,
                 [
                     'value' => (int) $status
@@ -69,5 +69,26 @@ class Category
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Return true if category in some store is active
+     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
+     * @return bool
+     */
+    public function getIsActiveInSomeStore(\Magento\Catalog\Api\Data\CategoryInterface $category): bool
+    {
+        $isActiveAttribute = $category->getResource()->getAttribute('is_active');
+        $tableName = $isActiveAttribute->getBackend()->getTable();
+
+        $connection = $this->connection->getConnection();
+
+        $select = $connection->select()
+            ->from($tableName, 'count(*) as c')
+            ->where('attribute_id = ?', $isActiveAttribute->getId())
+            ->where('entity_id = ?', $category->getId())
+            ->where('value = 1');
+
+        return (bool) $connection->fetchOne($select);
     }
 }
