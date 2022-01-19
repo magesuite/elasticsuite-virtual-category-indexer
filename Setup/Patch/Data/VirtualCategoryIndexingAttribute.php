@@ -23,11 +23,10 @@ class VirtualCategoryIndexingAttribute implements \Magento\Framework\Setup\Patch
     protected $moduleDataSetupInterface;
 
     public function __construct(
-        \Magento\Eav\Setup\EavSetupFactory $customerSetupFactory,
-        \Magento\Framework\Setup\ModuleDataSetupInterface $moduleDataSetupInterface,
-        \Magento\Eav\Model\Config $eavConfig
+        \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
+        \Magento\Framework\Setup\ModuleDataSetupInterface $moduleDataSetupInterface
     ) {
-        $this->eavSetupFactory = $customerSetupFactory;
+        $this->eavSetupFactory = $eavSetupFactory;
         $this->moduleDataSetupInterface = $moduleDataSetupInterface;
         $this->eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetupInterface]);
     }
