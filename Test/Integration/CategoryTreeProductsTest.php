@@ -11,12 +11,6 @@ class CategoryTreeProductsTest extends \PHPUnit\Framework\TestCase
      */
     protected $categoryRepository;
 
-    /**
-     * @magentoAppArea adminhtml
-     * @magentoDataFixture Magento/Catalog/_files/category.php
-     * @magentoDbIsolation enabled
-     * @return void
-     */
     public function setUp(): void
     {
         $this->objectManager = \Magento\TestFramework\ObjectManager::getInstance();

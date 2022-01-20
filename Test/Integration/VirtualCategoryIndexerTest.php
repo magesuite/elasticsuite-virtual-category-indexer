@@ -34,7 +34,7 @@ class VirtualCategoryIndexerTest extends \PHPUnit\Framework\TestCase
      * @magentoAppArea adminhtml
      * @magentoDataFixture Magento/Catalog/_files/category.php
      * @magentoConfigFixture virtual_category_indexer/general/enabled 1
-     * @magentoDbIsolation enabled
+     * @magentoDbIsolation disabled
      * @return void
      */
     public function testReindexRow()
