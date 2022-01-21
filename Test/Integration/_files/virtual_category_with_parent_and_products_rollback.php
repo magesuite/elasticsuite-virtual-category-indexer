@@ -16,3 +16,7 @@ $product->load(999);
 if ($product->getId()) {
     $product->delete();
 }
+
+
+$registry->unregister('isSecureArea');
+$registry->register('isSecureArea', false);
