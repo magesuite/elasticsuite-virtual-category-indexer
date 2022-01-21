@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Test\Integration;
 
+/**
+ * @magentoDbIsolation enabled
+ */
 class VirtualCategoryIndexerTest extends \PHPUnit\Framework\TestCase
 {
     /**
