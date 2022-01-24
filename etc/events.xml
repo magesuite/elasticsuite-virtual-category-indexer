@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <event name="remove_virtual_product_from_parent_categories">
-        <observer name="catalog_category_delete_after_done" instance="MageSuite\ElasticsuiteVirtualCategoryIndexer\Observer\RemoveVirtualProductFromParentCategories" />
+    <event name="catalog_category_delete_after_done">
+        <observer name="remove_virtual_product_from_parent_categories" instance="MageSuite\ElasticsuiteVirtualCategoryIndexer\Observer\RemoveVirtualProductFromParentCategories" />
     </event>
 </config>
 
