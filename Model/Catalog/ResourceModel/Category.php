@@ -16,12 +16,19 @@ class Category
      */
     protected $connection;
 
+    /**
+     * @var \Magento\Framework\EntityManager\MetadataPool
+     */
+    protected $metadataPool;
+
     public function __construct(
         \Magento\Eav\Model\AttributeRepository $attributeRepository,
-        \Magento\Framework\App\ResourceConnection $connection
+        \Magento\Framework\App\ResourceConnection $connection,
+        \Magento\Framework\EntityManager\MetadataPool $metadataPool
     ) {
         $this->attributeRepository = $attributeRepository;
         $this->connection = $connection;
+        $this->metadataPool = $metadataPool;
     }
 
     /**
@@ -36,6 +43,7 @@ class Category
             \Magento\Catalog\Model\Category::ENTITY,
             \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE
         );
+        $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class)->getLinkField();
 
         $tableName = $attribute->getBackend()->getTable();
 
@@ -55,7 +63,7 @@ class Category
                     'value' => (int) $status
                 ],
                 [
-                    'entity_id = ?' => $category->getId(),
+                    sprintf('%s = ?', $linkField) => $category->getId(),
                     'attribute_id = ?' => $attribute->getId(),
                 ]
             );
@@ -75,13 +83,14 @@ class Category
     {
         $isActiveAttribute = $category->getResource()->getAttribute('is_active');
         $tableName = $isActiveAttribute->getBackend()->getTable();
+        $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class)->getLinkField();
 
         $connection = $this->connection->getConnection();
 
         $select = $connection->select()
             ->from($tableName, 'count(*) as c')
             ->where('attribute_id = ?', $isActiveAttribute->getId())
-            ->where('entity_id = ?', $category->getId())
+            ->where(sprintf('%s = ?', $linkField), $category->getId())
             ->where('value = 1');
 
         return (bool) $connection->fetchOne($select);
