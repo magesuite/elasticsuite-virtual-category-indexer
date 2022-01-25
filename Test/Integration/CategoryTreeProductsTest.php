@@ -13,12 +13,21 @@ class CategoryTreeProductsTest extends \PHPUnit\Framework\TestCase
      * @var \Magento\Catalog\Model\CategoryRepository
      */
     protected $categoryRepository;
+    /**
+     * @var \Magento\Indexer\Model\IndexerFactory
+     */
+    protected $indexerFactory;
+    /**
+     * @var \Magento\Framework\EntityManager\MetadataPool
+     */
+    protected $metadataPool;
 
     public function setUp(): void
     {
         $this->objectManager = \Magento\TestFramework\ObjectManager::getInstance();
         $this->categoryRepository = $this->objectManager->create(\Magento\Catalog\Model\CategoryRepository::class);
         $this->indexerFactory = $this->objectManager->create(\Magento\Indexer\Model\IndexerFactory::class);
+        $this->metadataPool = $this->objectManager->create(\Magento\Framework\EntityManager\MetadataPool::class);
     }
 
     /**
@@ -49,7 +58,9 @@ class CategoryTreeProductsTest extends \PHPUnit\Framework\TestCase
             $indexer->load(\Magento\Catalog\Model\Indexer\Category\Product::INDEXER_ID);
             $indexer->reindexRow($categoryId);
 
-            $parentCollection = $parent->getProductCollection()->addAttributeToFilter('entity_id', ['in' => $productsIds]);
+            $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class)->getLinkField();
+            $parentCollection = $parent->getProductCollection()->addAttributeToFilter($linkField, ['in' => $productsIds]);
+
             static::assertEquals($productsIds, $parentCollection->getAllIds(), 'Virtual products not exists in parent category');
         }
     }
@@ -92,7 +103,9 @@ class CategoryTreeProductsTest extends \PHPUnit\Framework\TestCase
             $indexer->load(\Magento\Catalog\Model\Indexer\Category\Product::INDEXER_ID);
             $indexer->reindexRow($categoryId);
 
-            $parentCollection = $parent->getProductCollection()->addAttributeToFilter('entity_id', ['in' => $productsIds]);
+            $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class)->getLinkField();
+            $parentCollection = $parent->getProductCollection()->addAttributeToFilter($linkField, ['in' => $productsIds]);
+
             static::assertNotEquals($productsIds, $parentCollection->getAllIds(), 'Virtual products exists in parent category but shouldn\'t');
         }
     }
