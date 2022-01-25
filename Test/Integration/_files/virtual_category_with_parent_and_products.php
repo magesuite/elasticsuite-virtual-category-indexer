@@ -39,6 +39,7 @@ $categoryRepository = \Magento\TestFramework\Helper\Bootstrap::getObjectManager(
 $category = $categoryRepository->get(5);
 $category->setIsVirtualCategory(true);
 $category->setVirtualCategoryRoot(2);
+$category->setIsActive(true);
 $category->setVirtualRule(
     json_encode('{"type":"Smile\\ElasticsuiteVirtualCategory\\Model\\Rule\\Condition\\Combine","attribute":null,"operator":null,"value":"1","is_value_processed":null,"aggregator":"all"})')
 );

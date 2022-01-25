@@ -83,14 +83,14 @@ class Category
     {
         $isActiveAttribute = $category->getResource()->getAttribute('is_active');
         $tableName = $isActiveAttribute->getBackend()->getTable();
-        $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class)->getLinkField();
+        $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\CategoryInterface::class)->getLinkField();
 
         $connection = $this->connection->getConnection();
 
         $select = $connection->select()
             ->from($tableName, 'count(*) as c')
             ->where('attribute_id = ?', $isActiveAttribute->getId())
-            ->where(sprintf('%s = ?', $linkField), $category->getId())
+            ->where(sprintf('%s = ?', $linkField), $category->getRowId() ?? $category->getId())
             ->where('value = 1');
 
         return (bool) $connection->fetchOne($select);
