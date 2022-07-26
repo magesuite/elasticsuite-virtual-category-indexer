@@ -13,7 +13,6 @@ $productRepository = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()
 
 /** @var \Magento\Framework\Registry $registry */
 $registry = $objectManager->get(\Magento\Framework\Registry::class);
-
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', true);
 
@@ -22,9 +21,7 @@ $collection->addAttributeToFilter('entity_id', ['gt' => 2]);
 
 foreach ($collection as $item) {
     try {
-        $item->setIsVirtualCategory(false);
-        $categoryRepository->save($item);
-        $item->delete();
+        $categoryRepository->delete($item);
     } catch (\Exception | \Throwable $e) {
     } //phpcs:ignore
 }
@@ -32,19 +29,16 @@ foreach ($collection as $item) {
 $collection = $objectManager->create(\Magento\Catalog\Model\ResourceModel\Product\Collection::class);
 foreach ($collection as $item) {
     try {
-        $item->delete();
+        $productRepository->delete($item);
     } catch (\Exception | \Throwable $e) {
     } //phpcs:ignore
 }
-$productRepository->cleanCache();
 
 $connection = $collection->getResource()->getConnection();
 $urlTableName = $collection->getTable('url_rewrite');
 $connection->delete($urlTableName, 'entity_type = "category"');
 
-$connection = $collection->getResource()->getConnection();
-$urlTableName = $collection->getTable('catalog_category_product');
-$connection->delete($urlTableName, 'entity_id > 0');
-
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', false);
+
+\Magento\TestFramework\Workaround\Override\Fixture\Resolver::getInstance()->requireDataFixture('Magento/Store/_files/store_with_second_root_category_rollback.php');

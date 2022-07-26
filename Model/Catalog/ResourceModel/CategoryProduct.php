@@ -216,4 +216,25 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
 
         return $products;
     }
+
+    /**
+     * @param \Magento\Catalog\Api\Data\CategoryProductLinkInterface $productLink
+     * @return bool
+     */
+    public function isRelatedToVirtualCategory(\Magento\Catalog\Api\Data\CategoryProductLinkInterface $productLink): bool
+    {
+        $connection = $this->getConnection();
+
+        $tableName = $connection->getTableName('catalog_category_product');
+        $productTableName = $connection->getTableName('catalog_product_entity');
+        $select = $connection->select()->from(['link' => $tableName], 'virtual_category_id')
+            ->join(
+                ['entity' => $productTableName],
+                $connection->quoteInto('link.product_id = entity.entity_id and entity.sku = ?', $productLink->getSku()),
+                ''
+            )
+            ->where('category_id = ?', $productLink->getCategoryId());
+
+        return (bool) $connection->fetchOne($select);
+    }
 }

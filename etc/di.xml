@@ -54,5 +54,10 @@
                 type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Indexer\Model\Indexer\DependencyDecorator\ChangeIndexerNameIfDisabled" sortOrder="1" />
     </type>
 
+    <type name="Magento\Catalog\Model\CategoryLinkRepository">
+        <plugin name=""
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Model\CategoryLinkRepository\CheckIfExistsItemIsRelatedToVirtualCategory" />
+    </type>
+
 </config>
 
