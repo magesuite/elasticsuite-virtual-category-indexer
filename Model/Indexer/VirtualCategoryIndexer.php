@@ -11,49 +11,17 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
      */
     public const INDEXER_ID = 'elasticsuite_virtual_category';
 
-    /**
-     * @var \Magento\Catalog\Model\Category
-     */
-    protected $catalogCategoryModel;
-
-    /**
-     * @var \Magento\Catalog\Model\CategoryRepository
-     */
-    protected $categoryRepository;
-
-    /**
-     * @var \Magento\Catalog\Model\ResourceModel\CategoryProduct
-     */
-    protected $catalogCategoryProductResourceModel;
-
-    /**
-     * @var \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\CollectionFactory
-     */
-    protected $categoryCollectionFactory;
+    protected \Magento\Catalog\Model\Category $catalogCategoryModel;
+    protected \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryProductResourceModel;
+    protected \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory;
+    protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
+    protected \Magento\Indexer\Model\IndexerFactory $indexerFactory;
+    protected \Magento\Store\Model\StoreManagerInterface $storeManager;
 
     protected $categoryIds = [];
-
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category
-     */
-    protected $categoryResourceModel;
-
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration
-     */
-    protected $configuration;
-
-    /**
-     * @var \Magento\Indexer\Model\IndexerFactory
-     */
-    protected $indexerFactory;
-
     protected $productIds = [];
-
-    /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $storeManager;
 
     public function __construct(
         \Magento\Catalog\Model\Category $catalogCategoryModel,
@@ -141,10 +109,10 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
      * @param int $categoryId
      * @return void
      */
-    protected function reindex($categoryId)
+    protected function reindex($categoryId): void
     {
         try {
-            $category = $this->getCategory($categoryId);
+            $category = $this->getCategory((int)$categoryId);
 
             $oldProductIds = $this->catalogCategoryProductResourceModel->getOldProductIds();
             $currentProductIds = $this->catalogCategoryProductResourceModel->reindexVirtualCategory($category);
@@ -173,9 +141,9 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
      * @return \Magento\Catalog\Api\Data\CategoryInterface
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    protected function getCategory($categoryId)
+    protected function getCategory(int $categoryId): \Magento\Catalog\Api\Data\CategoryInterface
     {
-        $storeId = current($this->storeManager->getStores())->getId();
+        $storeId = $this->categoryResourceModel->getFirstStoreId($categoryId);
         $category = $this->categoryRepository->get($categoryId, $storeId);
 
         $category->setAddedProductIds($category->getAddedProductIds() ?? []);

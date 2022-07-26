@@ -95,4 +95,31 @@ class Category
 
         return (bool) $connection->fetchOne($select);
     }
+
+    /**
+     * @param int $categoryId
+     * @return int
+     */
+    public function getFirstStoreId(int $categoryId): int
+    {
+        $connection = $this->connection->getConnection();
+        $storeTableName = $connection->getTableName('store');
+        $storeGroupTableName = $connection->getTableName('store_group');
+        $categoryTableName = $connection->getTableName('catalog_category_entity');
+
+        $rootCategoryIdQueryField = new \Zend_Db_Expr('SUBSTRING_INDEX(SUBSTRING(path FROM (LOCATE(\'/\', path)+1)), \'/\', 1) as root_category_id');
+        $rootCategoryIdSelect = $connection->select()->from($categoryTableName, $rootCategoryIdQueryField)
+            ->where('entity_id = ?', $categoryId);
+
+        $select = $connection->select()
+            ->from(['s' => $storeTableName], 's.store_id')
+            ->join(
+                ['sg' => $storeGroupTableName],
+                's.`group_id` = sg.group_id and sg.root_category_id = (' . $rootCategoryIdSelect . ')',
+                ''
+            )
+            ->limit(1);
+
+        return (int) $connection->fetchOne($select);
+    }
 }

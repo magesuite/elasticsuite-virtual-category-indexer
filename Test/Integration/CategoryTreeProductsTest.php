@@ -101,7 +101,8 @@ class CategoryTreeProductsTest extends \PHPUnit\Framework\TestCase
             $indexer->load(\Magento\Catalog\Model\Indexer\Category\Product::INDEXER_ID);
             $indexer->reindexRow($categoryId);
 
-            $parentCollection = $parent->getProductCollection()->addAttributeToFilter('entity_id', ['in' => $productsIds]);
+            $parentCollection = $parent->getProductCollection()
+                ->addAttributeToFilter('entity_id', ['in' => $productsIds]);
 
             static::assertNotEquals($productsIds, $parentCollection->getAllIds(), 'Virtual products exists in parent category but shouldn\'t');
         }

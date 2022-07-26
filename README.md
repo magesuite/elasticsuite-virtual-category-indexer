@@ -79,3 +79,22 @@ Module install a new category attribute `virtual_category_reindex_required`. If 
 
 ### When change root category of virtual category, previous products still are in the category
 To remove product from categories run full reindexation. 
+
+### After turn on module, virtual category does not display products anymore
+If you see products on the preview in admin area:
+
+![](Docs/products_list_preview.png)
+
+it seems that ES is able to return the right product IDs in the indexer. 
+
+Make sure that the script provides the right category object here:
+
+`vendor/creativestyle/magesuite-elasticsuite-virtual-category-indexer/Model/Indexer/VirtualCategoryIndexer.php:150`
+
+![](Docs/category_2.png)
+
+should be the same as here:
+
+`vendor/creativestyle/magesuite-elasticsuite-virtual-category-indexer/Controller/Adminhtml/Category/Virtual/Preview.php:67`
+
+![](Docs/category_1.png)

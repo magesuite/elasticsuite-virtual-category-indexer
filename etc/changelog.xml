@@ -1,0 +1,16 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:MageSuite_Changelog:etc/changelog.xsd">
+    <module
+        id="MageSuite_ElasticsuiteVirtualCategoryIndexer"
+        name="MageSuite_ElasticsuiteVirtualCategoryIndexer"
+        description="This module reindexes virtual categories and allows to display them as real ones."
+        url="https://gitlab.creativestyle.pl/magesuite/elasticsuite-virtual-category-indexer">
+        <changelog>
+            <tag version="v1.1.9" date="2022-06-17">
+                <entry>
+                    <type>FIX</type>
+                    <overview>Fix for indexing product from a virtual category in additional website</overview>
+                </entry>
+            </tag>
+        </changelog>
+    </module>
+</config>
