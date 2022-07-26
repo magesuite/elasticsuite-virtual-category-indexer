@@ -5,7 +5,7 @@
         description="This module reindexes virtual categories and allows to display them as real ones."
         url="https://gitlab.creativestyle.pl/magesuite/elasticsuite-virtual-category-indexer">
         <changelog>
-            <tag version="v1.1.9" date="2022-06-17">
+            <tag version="v1.1.10" date="2022-06-17">
                 <entry>
                     <type>FIX</type>
                     <overview>Fix for indexing product from a virtual category in additional website</overview>
