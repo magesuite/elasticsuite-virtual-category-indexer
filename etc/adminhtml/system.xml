@@ -23,6 +23,11 @@
                     </depends>
                     <comment>Use Crontab Format (Eg. "*/5 * * * *" for every 5 minutes) | https://en.wikipedia.org/wiki/Cron</comment>
                 </field>
+                <field id="assign_products_to_parent_categories" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="0">
+                    <label>Assign products to parent categories</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>When this option is enabled indexer will assign parent categories to products</comment>
+                </field>
             </group>
         </section>
     </system>
