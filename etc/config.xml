@@ -6,6 +6,7 @@
             <general>
                 <enabled>0</enabled>
                 <schedule>0 0 * * *</schedule>
+                <assign_products_to_parent_categories>1</assign_products_to_parent_categories>
             </general>
         </virtual_category_indexer>
     </default>

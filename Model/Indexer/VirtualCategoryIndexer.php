@@ -128,8 +128,11 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             $this->categoryIds[] = $categoryId;
         } finally {
             if (isset($category)) {
-                $isActive = $this->categoryResourceModel->getIsActiveInSomeStore($category);
-                $this->catalogCategoryProductResourceModel->assignProductsToParentCategory($category, $isActive);
+                if ($this->configuration->shouldAssignProductsToParentCategories()) {
+                    $isActive = $this->categoryResourceModel->getIsActiveInSomeStore($category);
+                    $this->catalogCategoryProductResourceModel->assignProductsToParentCategory($category, $isActive);
+                }
+
                 $this->categoryResourceModel->setReindexRequired($category, false);
             }
         }

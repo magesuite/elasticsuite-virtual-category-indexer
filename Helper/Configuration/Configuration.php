@@ -18,6 +18,8 @@ class Configuration
 
     protected $schedule = null;
 
+    protected $assignToParentCategories = null;
+
     public function __construct(\Magento\Framework\App\Config\ScopeConfigInterface $scopeConfigInterface)
     {
         $this->scopeConfig = $scopeConfigInterface;
@@ -45,5 +47,17 @@ class Configuration
         }
 
         return $this->schedule;
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldAssignProductsToParentCategories(): bool
+    {
+        if ($this->assignToParentCategories === null) {
+            $this->assignToParentCategories = $this->scopeConfig->getValue(self::XML_PATH_VIRTUAL_CATEGORY_INDEXER_SCHEDULE);
+        }
+
+        return $this->assignToParentCategories;
     }
 }
