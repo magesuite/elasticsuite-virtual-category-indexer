@@ -58,6 +58,6 @@ class Configuration
             $this->assignToParentCategories = $this->scopeConfig->getValue(self::XML_PATH_VIRTUAL_CATEGORY_INDEXER_SCHEDULE);
         }
 
-        return $this->assignToParentCategories;
+        return (bool) $this->assignToParentCategories;
     }
 }
