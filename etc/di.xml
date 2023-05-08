@@ -55,8 +55,16 @@
     </type>
 
     <type name="Magento\Catalog\Model\CategoryLinkRepository">
-        <plugin name=""
+        <plugin name="check_if_item_is_related_to_virtual_category"
                 type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Model\CategoryLinkRepository\CheckIfExistsItemIsRelatedToVirtualCategory" />
+    </type>
+
+    <type name="Smile\ElasticsuiteVirtualCategory\Plugin\Catalog\Category\SaveProductsPositions">
+        <plugin name="store_category_posted_products" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtualCategory\Plugin\Catalog\Category\SaveProductsPositions\StoreCategoryPostedProducts" sortOrder="0" />
+    </type>
+
+    <type name="Magento\Catalog\Model\ResourceModel\Category">
+        <plugin name="restore_category_posted_products" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\RestoreCategoryPostedProducts" sortOrder="10" />
     </type>
 
 </config>
