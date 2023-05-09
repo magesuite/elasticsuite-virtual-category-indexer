@@ -41,21 +41,21 @@ class StoreCategoryPostedProducts
             return [$categoryResource, $proceed, $category];
         }
 
-        $virtualCategoryRootChanged = $category->getOrigData('virtual_category_root') <=> $category->getData('virtual_category_root');
-        $shouldBeReindex = $virtualCategoryRootChanged || $this->isVirtualRuleChanged($category);
-
-        if (!$shouldBeReindex) {
+        if (!$this->shouldIndexBeRefreshed($category)) {
             $this->categoryPostedProductsContainer->setPostedProducts($category->getPostedProducts());
         }
 
         return [$categoryResource, $proceed, $category];
     }
 
-    protected function isVirtualRuleChanged($category)
+    protected function shouldIndexBeRefreshed($category)
     {
         $clonedCategory = clone $category;
         $this->saveHandler->execute($clonedCategory);
 
-        return $category->getOrigData('virtual_rule') <=> $clonedCategory->getData('virtual_rule');
+        $isVirtualRuleChanged = $category->getOrigData('virtual_rule') <=> $clonedCategory->getData('virtual_rule');
+        $virtualCategoryRootChanged = $category->getOrigData('virtual_category_root') <=> $category->getData('virtual_category_root');
+
+        return $isVirtualRuleChanged || $virtualCategoryRootChanged;
     }
 }
