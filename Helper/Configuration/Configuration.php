@@ -8,6 +8,8 @@ class Configuration
 {
     public const XML_PATH_VIRTUAL_CATEGORY_INDEXER_ENABLED = 'virtual_category_indexer/general/enabled';
     public const XML_PATH_VIRTUAL_CATEGORY_INDEXER_SCHEDULE = 'virtual_category_indexer/general/schedule';
+    public const XML_PATH_VIRTUAL_CATEGORY_ASSIGN_PRODUCTS_TO_PARENT_CATEGORIES = 'virtual_category_indexer/general/assign_products_to_parent_categories';
+
 
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
@@ -55,7 +57,7 @@ class Configuration
     public function shouldAssignProductsToParentCategories(): bool
     {
         if ($this->assignToParentCategories === null) {
-            $this->assignToParentCategories = $this->scopeConfig->getValue(self::XML_PATH_VIRTUAL_CATEGORY_INDEXER_SCHEDULE);
+            $this->assignToParentCategories = $this->scopeConfig->getValue(self::XML_PATH_VIRTUAL_CATEGORY_ASSIGN_PRODUCTS_TO_PARENT_CATEGORIES);
         }
 
         return (bool) $this->assignToParentCategories;
