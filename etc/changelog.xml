@@ -11,6 +11,12 @@
                     <overview>Fix for indexing product from a virtual category in additional website</overview>
                 </entry>
             </tag>
+            <tag version="v1.1.13" date="2023-05-08">
+                <entry>
+                    <type>FIX</type>
+                    <overview>Fixed empty category on frontend when category was saved in the admin panel issue</overview>
+                </entry>
+            </tag>
         </changelog>
     </module>
 </config>
