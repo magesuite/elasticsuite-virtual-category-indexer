@@ -4,4 +4,3 @@
         <observer name="remove_virtual_product_from_parent_categories" instance="MageSuite\ElasticsuiteVirtualCategoryIndexer\Observer\RemoveVirtualProductFromParentCategories" />
     </event>
 </config>
-
