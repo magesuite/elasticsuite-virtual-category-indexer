@@ -90,11 +90,13 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
     {
         try {
             $categoryId = $this->getRequest()->getParam('id');
-            $category = $this->categoryRepository->get($categoryId);
+            $storeId = $this->getRequest()->getParam('store', 0);
+
+            $category = $this->categoryRepository->get($categoryId, $storeId);
 
             $this->categoryResourceModel->setReindexRequired($category);
 
-            $this->categoryRepository->save($category);
+            $category->save();
 
             $responseData = [
                 'message' => __('Product assignments will be reindexed in the next few minutes.')

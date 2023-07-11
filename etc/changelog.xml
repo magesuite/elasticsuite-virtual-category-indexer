@@ -17,6 +17,13 @@
                     <overview>Fixed empty category on frontend when category was saved in the admin panel issue</overview>
                 </entry>
             </tag>
+            <tag version="v1.1.15" date="2023-07-10">
+                <entry>
+                    <type>FIX</type>
+                    <overview>Fixed issue with overwriting category attributes in the first store</overview>
+                    <ticket_id>IPET-2088</ticket_id>
+                </entry>
+            </tag>
         </changelog>
     </module>
 </config>
