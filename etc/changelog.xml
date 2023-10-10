@@ -24,6 +24,12 @@
                     <ticket_id>IPET-2088</ticket_id>
                 </entry>
             </tag>
+            <tag version="v1.1.16" date="2023-07-10">
+                <entry>
+                    <type>FIX</type>
+                    <overview>PHP 8.2 compatibility</overview>
+                </entry>
+            </tag>
         </changelog>
     </module>
 </config>

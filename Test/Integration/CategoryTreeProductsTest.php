@@ -10,6 +10,10 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Test\Integration;
 class CategoryTreeProductsTest extends \PHPUnit\Framework\TestCase
 {
     /**
+     * @var \Magento\Framework\App\ObjectManager
+     */
+    protected $objectManager;
+    /**
      * @var \Magento\Catalog\Model\CategoryRepository
      */
     protected $categoryRepository;
