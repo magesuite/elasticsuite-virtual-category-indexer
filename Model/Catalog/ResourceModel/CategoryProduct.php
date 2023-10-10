@@ -8,14 +8,12 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
 {
     /**
      * Product ids before category reindexed
-     * @var array
      */
-    protected $oldProductsIds;
+    protected ?array $oldProductsIds = null;
 
-    /**
-     * @var \Smile\ElasticsuiteVirtualCategory\Model\PreviewFactory
-     */
-    protected $virtualCategoryPreviewFactory;
+    protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
+
+    protected \Smile\ElasticsuiteVirtualCategory\Model\PreviewFactory $virtualCategoryPreviewFactory;
 
     public function __construct(
         \Magento\Catalog\Model\CategoryRepository $categoryRepository,
