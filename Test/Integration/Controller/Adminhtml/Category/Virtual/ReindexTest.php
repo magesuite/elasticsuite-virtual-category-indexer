@@ -5,7 +5,6 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Test\Integration\Controll
 /**
  * @magentoDbIsolation enabled
  * @magentoAppIsolation enabled
- * @magentoAppArea adminhtml
  */
 class ReindexTest extends \Magento\TestFramework\TestCase\AbstractBackendController
 {
@@ -30,16 +29,26 @@ class ReindexTest extends \Magento\TestFramework\TestCase\AbstractBackendControl
 
         $requestData = ['id' => $categoryId];
 
-        $overwrittenValues = $this->getOverwrittenValues($categoryId);
+        $this->removeStoreViewValues($categoryId);
 
         $this->getRequest()->setPostValue($requestData);
         $this->getRequest()->setMethod(\Magento\Framework\App\Request\Http::METHOD_POST);
         $this->dispatch('backend/catalog/category_virtual/reindex');
 
-        $this->assertCount(count($overwrittenValues), $this->getOverwrittenValues($categoryId));
+        $this->assertCount(0, $this->getOverwrittenValues($categoryId));
     }
 
-    protected function getOverwrittenValues($categoryId)
+    protected function removeStoreViewValues(int $categoryId)
+    {
+        $connection = $this->connection->getConnection();
+
+        $connection->delete(
+            $this->connection->getTableName('catalog_category_entity_int'),
+            ['entity_id = ?' => $categoryId, 'store_id = ?' => self::DEFAULT_FRONTEND_STORE_ID]
+        );
+    }
+
+    protected function getOverwrittenValues(int $categoryId)
     {
         $connection = $this->connection->getConnection();
 
