@@ -6,30 +6,15 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
 {
     public const ADMIN_RESOURCE = 'MageSuite_ElasticsuiteVirtualCategoryIndexer::config_virtual_category_indexer';
 
-    /**
-     * @var \Magento\Catalog\Model\CategoryRepository
-     */
-    protected $categoryRepository;
+    protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
 
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category
-     */
-    protected $categoryResourceModel;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel;
 
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration
-     */
-    protected $configuration;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
 
-    /**
-     * @var \Magento\Framework\Controller\Result\JsonFactory
-     */
-    protected $jsonFactory;
+    protected \Magento\Framework\Controller\Result\JsonFactory $jsonFactory;
 
-    /**
-     * @var \Magento\Backend\Model\Url
-     */
-    protected $urlBuilder;
+    protected \Magento\Backend\Model\Url $urlBuilder;
 
     public function __construct(
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration,
@@ -53,7 +38,6 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
      */
     public function execute()
     {
-
         if ($this->configuration->isEnabled()) {
             $responseData = $this->forceReindexRequiredStatus();
         } else {
@@ -67,9 +51,6 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
         return $resultJson->setData($responseData);
     }
 
-    /**
-     * @return array
-     */
     protected function forceReindexRequiredStatus(): array
     {
         if (!$this->configuration->isEnabled()) {
@@ -83,16 +64,12 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
         return $responseData;
     }
 
-    /**
-     * @return array
-     */
     protected function forceReindex(): array
     {
         try {
             $categoryId = $this->getRequest()->getParam('id');
-            $storeId = $this->getRequest()->getParam('store', 0);
 
-            $category = $this->categoryRepository->get($categoryId, $storeId);
+            $category = $this->categoryRepository->get($categoryId, \Magento\Store\Model\Store::DEFAULT_STORE_ID);
 
             $this->categoryResourceModel->setReindexRequired($category);
 
