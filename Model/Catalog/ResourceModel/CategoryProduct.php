@@ -63,10 +63,10 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
     protected function getProducts(\Magento\Catalog\Api\Data\CategoryInterface $category)
     {
         $previewModel = $this->virtualCategoryPreviewFactory->create(['category' => $category, 'size' => 0, 'search' => '']);
-        $size = $previewModel->getRawData()['size'];
+        $size = $previewModel->getRawData(true)['size'];
 
         $previewModel = $this->virtualCategoryPreviewFactory->create(['category' => $category, 'size' => $size, 'search' => '']);
-        $products  = $previewModel->getRawData()['products'];
+        $products  = $previewModel->getRawData(true)['products'];
 
         return $products;
     }

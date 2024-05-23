@@ -47,7 +47,7 @@ class GetCategorySearchQuery
         $reindexRequired = $category->getData(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE);
 
         if (!$extensionAttributes->getVirtualQuery() && !$reindexRequired) {
-            $category->setIsVirtualCategory(null);
+            $category->setIsVirtualCategory(0);
         }
     }
 }
