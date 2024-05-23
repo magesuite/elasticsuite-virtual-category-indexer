@@ -36,9 +36,15 @@ class Preview extends \Smile\ElasticsuiteVirtualCategory\Model\Preview
     /**
      * @return array
      */
-    public function getRawData()
+    public function getRawData($forceClearCollection = true)
     {
-        $productCollection = $this->getProductCollection()->setPageSize($this->size);
+        $productCollection = $this->getProductCollection();
+
+        if ($forceClearCollection) {
+            $productCollection->clear();
+        }
+
+        $productCollection->setPageSize($this->size);
 
         if (!in_array($this->search, [null, ''], true)) {
             $productCollection->setSearchQuery($this->search);

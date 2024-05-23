@@ -5,29 +5,35 @@
         description="This module reindexes virtual categories and allows to display them as real ones."
         url="https://gitlab.creativestyle.pl/magesuite/elasticsuite-virtual-category-indexer">
         <changelog>
-            <tag version="v1.1.10" date="2022-06-17">
+            <tag version="1.1.10" date="2022-06-17">
                 <entry>
                     <type>FIX</type>
                     <overview>Fix for indexing product from a virtual category in additional website</overview>
                 </entry>
             </tag>
-            <tag version="v1.1.13" date="2023-05-08">
+            <tag version="1.1.13" date="2023-05-08">
                 <entry>
                     <type>FIX</type>
                     <overview>Fixed empty category on frontend when category was saved in the admin panel issue</overview>
                 </entry>
             </tag>
-            <tag version="v1.1.15" date="2023-07-10">
+            <tag version="1.1.15" date="2023-07-10">
                 <entry>
                     <type>FIX</type>
                     <overview>Fixed issue with overwriting category attributes in the first store</overview>
                     <ticket_id>IPET-2088</ticket_id>
                 </entry>
             </tag>
-            <tag version="v1.1.16" date="2023-07-10">
+            <tag version="1.1.16" date="2023-07-10">
                 <entry>
                     <type>FIX</type>
                     <overview>PHP 8.2 compatibility</overview>
+                </entry>
+            </tag>
+            <tag version="1.1.18" date="2024-05-16">
+                <entry>
+                    <type>FIX</type>
+                    <overview>Fix for wrong indexed data and skipping virtual category query.</overview>
                 </entry>
             </tag>
         </changelog>
