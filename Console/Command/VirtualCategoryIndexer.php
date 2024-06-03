@@ -6,46 +6,18 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Console\Command;
 
 class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
 {
-    protected const OPTION_INDEXER_STRATEGY = 'strategy';
-    protected const OPTION_INDEXER_CATEGORY_IDS = 'Category ids';
-    protected const STRATEGY_QUESTION_MESSAGE = 'Choose correct strategy [%s]';
+    protected const COMMAND_NAME = 'magesuite:elasticsuite:virtual-category-products-relations:reindex';
     protected const IDS_QUESTION_MESSAGE = 'Provide correct category ids separated by comma';
     protected const ID_QUESTION_MESSAGE = 'Provide correct category id';
+    protected const OPTION_INDEXER_CATEGORY_IDS = 'Category ids';
+    protected const OPTION_INDEXER_STRATEGY = 'strategy';
+    protected const STRATEGY_QUESTION_MESSAGE = 'Choose correct strategy [%s]';
 
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\ConfigurationFactory
-     */
-    protected $configurationFactory;
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface
-     */
-    protected $virtualCategoryIndexerService;
-
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterfaceFactory
-     */
-    protected $virtualCategoryIndexerServiceFactory;
-
-    /**
-     * @var \Symfony\Component\Console\Input\InputInterface
-     */
-    protected $input;
-
-    /**
-     * @var \Symfony\Component\Console\Output\OutputInterface
-     */
-    protected $output;
-
-    /**
-     * @var \Magento\Framework\App\State
-     */
-    protected $state;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface $virtualCategoryIndexerService;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterfaceFactory $virtualCategoryIndexerServiceFactory;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\ConfigurationFactory $configurationFactory;
+    protected \Magento\Framework\App\State $state;
+    protected \Psr\Log\LoggerInterface $logger;
 
     public function __construct(
         \Magento\Framework\App\State $state,
@@ -83,7 +55,7 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
             )
         ];
 
-        $this->setName('indexer:reindex:virtual-category')
+        $this->setName(self::COMMAND_NAME)
             ->setDescription('Copy product ids connected to category ids into catalog_category_product table')
             ->setDefinition($options);
 
@@ -98,13 +70,13 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
     protected function execute(
         \Symfony\Component\Console\Input\InputInterface $input,
         \Symfony\Component\Console\Output\OutputInterface $output
-    ) {
+    ):int {
         $this->virtualCategoryIndexerService = $this->virtualCategoryIndexerServiceFactory->create();
         $configuration = $this->configurationFactory->create();
 
         if (!$configuration->isEnabled()) {
             $output->writeln("Module is disabled in store configuration");
-            return;
+            return 0;
         }
 
         try {
@@ -113,10 +85,14 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
                 [$this, 'runIndexer'],
                 [$input, $output]
             );
+
+            return 1;
         } catch (\InvalidArgumentException | \Exception $e) {
             $output->writeln($e->getMessage());
             $this->logger->critical($e->getMessage(), ['exception' => $e]);
         }
+
+        return 0;
     }
 
     /**

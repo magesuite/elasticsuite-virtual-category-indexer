@@ -16,7 +16,8 @@
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="elasticsearch_virtual_category_indexer" xsi:type="object">MageSuite\ElasticsuiteVirtualCategoryIndexer\Console\Command\VirtualCategoryIndexer</item>
+                <item name="magesuite_elasticsuite:virtual_category_indexer" xsi:type="object">MageSuite\ElasticsuiteVirtualCategoryIndexer\Console\Command\VirtualCategoryIndexer</item>
+                <item name="magesuite_elasticsuite:delete_virtual_category_products_relations" xsi:type="object">MageSuite\ElasticsuiteVirtualCategoryIndexer\Console\Command\DeleteVirtualCategoryProductsRelations</item>
             </argument>
         </arguments>
     </type>
