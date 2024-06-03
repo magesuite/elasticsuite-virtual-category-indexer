@@ -15,10 +15,11 @@ To enable `virtual category indexer` or change a cron schedule go to:
 
 ## CLI Commmand
 
-| Command                                                                                                  | Description                                                                      |
-|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| `indexer:reindex elasticsuite_virtual_category_indexer`                                        | Reindex all virtual categories. It reindex whole  `catalogsearch_category` index |
-| `indexer:reindex:virtual-category [-s, --strategy  [STRATEGY]] [-c , --ids [CATEGORY IDS]]` | Reindex virtual categories with strategy (full, list, category)                    |
+| Command                                                                                                                       | Description                                                                      |
+|-------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `indexer:reindex elasticsuite_virtual_category_indexer`                                                                       | Reindex all virtual categories. It reindex whole  `catalogsearch_category` index |
+| `magesuite:elasticsuite:virtual-category-products-relations:reindex [-s, --strategy  [STRATEGY]] [-c , --ids [CATEGORY IDS]]` | Reindex virtual categories with strategy (full, list, category)                  |
+| `magesuite:elasticsuite:virtual-category-products-relations:delete`                                                           | Cleanup/revert indexed virtual categories relations                              |
 
 ## Cron
 
@@ -32,6 +33,7 @@ Full reindexation is runing automaticaly by cron schedule.
 | MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ElasticsuiteVirtualCategory\Model\Preview                      | Allow to get raw data from from response from elasticsearch using `getRawData()` method                                                                                                                           |
 | MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\CategoryProduct                          | Extension Class for `Magento\Catalog\Model\ResourceModel\CategoryProduct`. Allow to insert _product_ ids for a virtual category into the table `catalog_category_product` and get theirs ids for other operations |
 | MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category\Collection                      | Extension Class for `Magento\Catalog\Model\ResourceModel\Category\Collection` provide the method `getVirtualCategoryIds()` to get all virtual category ids.                                                       |
+| MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\CategoryProductRelations                         | Resource Model which provide the method to delete category ids from the table `catalog_category_product`.                                                                 |
 | MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\ReindexOnChange                              | Plugin which is call before runing the reindex method on category model and causes run `virtual category indexer`                                                                                                 |
 | MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtualCategory\Model\Rule\GetCategorySearchQuery | Plugin which change value of `is_virtual_category` attribute to `null` . It force sendingstandard category request to elasticsearch instead of depends of the attribute value.                                    |
 | MageSuite\ElasticsuiteVirtualCategoryIndexer\Service\VirtualCategoryIndexer                                       | Service which provide strategy logic for CLI Command                                                                                                                                                              |

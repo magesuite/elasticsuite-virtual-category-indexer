@@ -30,10 +30,17 @@
                     <overview>PHP 8.2 compatibility</overview>
                 </entry>
             </tag>
+
             <tag version="1.1.18" date="2024-05-16">
                 <entry>
                     <type>FIX</type>
                     <overview>Fix for wrong indexed data and skipping virtual category query.</overview>
+                </entry>
+            </tag>
+            <tag version="1.1.19" date="2024-05-20">
+                <entry>
+                    <type>FEATURE</type>
+                    <overview>[EVCI] Command to cleanup/revert relationsy</overview>
                 </entry>
             </tag>
         </changelog>
