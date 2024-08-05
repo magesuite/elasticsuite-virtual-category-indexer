@@ -19,6 +19,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
     protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
     protected \Magento\Indexer\Model\IndexerFactory $indexerFactory;
     protected \Magento\Store\Model\StoreManagerInterface $storeManager;
+    protected \Psr\Log\LoggerInterface $logger;
 
     protected $categoryIds = [];
     protected $productIds = [];
@@ -31,7 +32,8 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         \Magento\Indexer\Model\IndexerFactory $indexerFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration,
-        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
+        \Psr\Log\LoggerInterface $logger
     ) {
         $this->catalogCategoryModel = $catalogCategoryModel;
         $this->catalogCategoryProductResourceModel = $catalogCategoryProductResourceModel;
@@ -41,6 +43,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $this->configuration = $configuration;
         $this->indexerFactory = $indexerFactory;
         $this->storeManager = $storeManager;
+        $this->logger = $logger;
     }
 
     /*
@@ -126,6 +129,9 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             }
 
             $this->categoryIds[] = $categoryId;
+        } catch (\Exception $e) {
+            $this->logger->critical(sprintf('Error during virtual category reindex, categoryId %s, error %s', $categoryId, $e->getMessage()));
+            $this->categoryResourceModel->setReindexRequired($categoryId, true);
         } finally {
             if (isset($category)) {
                 if ($this->configuration->shouldAssignProductsToParentCategories()) {
