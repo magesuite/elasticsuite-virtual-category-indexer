@@ -45,7 +45,7 @@
             </tag>
             <tag version="1.1.20" date="2024-08-05">
                 <entry>
-                    <type>FEATURE</type>
+                    <type>FIX</type>
                     <overview>Catch errors during virtual category reindex</overview>
                 </entry>
             </tag>
