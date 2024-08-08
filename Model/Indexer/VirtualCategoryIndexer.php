@@ -131,7 +131,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             $this->categoryIds[] = $categoryId;
         } catch (\Exception $e) {
             $this->logger->critical(sprintf('Error during virtual category reindex, categoryId %s, error %s', $categoryId, $e->getMessage()));
-            $this->categoryResourceModel->setReindexRequired($categoryId, true);
+            $this->categoryResourceModel->setReindexRequired($category, true);
         } finally {
             if (isset($category)) {
                 if ($this->configuration->shouldAssignProductsToParentCategories()) {
