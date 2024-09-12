@@ -19,10 +19,17 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
     protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
     protected \Magento\Indexer\Model\IndexerFactory $indexerFactory;
     protected \Magento\Store\Model\StoreManagerInterface $storeManager;
+    protected \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory;
+    protected \Magento\Framework\App\CacheInterface $cache;
     protected \Psr\Log\LoggerInterface $logger;
 
-    protected $categoryIds = [];
-    protected $productIds = [];
+    /** @var int[] */
+    protected array $categoryIds = [];
+
+    /** @var int[] */
+    protected array $productIds = [];
+
+    protected ?array $customerGroups = null;
 
     public function __construct(
         \Magento\Catalog\Model\Category $catalogCategoryModel,
@@ -33,6 +40,8 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
+        \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory,
+        \Magento\Framework\App\CacheInterface $cache,
         \Psr\Log\LoggerInterface $logger
     ) {
         $this->catalogCategoryModel = $catalogCategoryModel;
@@ -43,6 +52,8 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $this->configuration = $configuration;
         $this->indexerFactory = $indexerFactory;
         $this->storeManager = $storeManager;
+        $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
+        $this->cache = $cache;
         $this->logger = $logger;
     }
 
@@ -70,7 +81,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             return;
         }
 
-        $categoryIds =  $this->categoryCollectionFactory->create()->getAllVirtualCategoryIds();
+        $categoryIds = $this->categoryCollectionFactory->create()->getAllVirtualCategoryIds();
 
         foreach ($categoryIds as $categoryId) {
             $this->reindex((int) $categoryId);
@@ -108,15 +119,13 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $this->reindexCategoryProduct();
     }
 
-    /**
-     * @param int $categoryId
-     * @return void
-     */
-    protected function reindex($categoryId): void
+    protected function reindex(int $categoryId): void
     {
         try {
-            $category = $this->getCategory((int)$categoryId);
+            $category = $this->getCategory($categoryId);
+            $this->categoryResourceModel->setReindexRequired($category);
 
+            $this->clearCategorySearchQueryCache($category);
             $oldProductIds = $this->catalogCategoryProductResourceModel->getOldProductIds();
             $currentProductIds = $this->catalogCategoryProductResourceModel->reindexVirtualCategory($category);
 
@@ -165,9 +174,31 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         return $category;
     }
 
-    /**
-     * @return void
-     */
+    public function clearCategorySearchQueryCache(\Magento\Catalog\Api\Data\CategoryInterface $category): void
+    {
+        $stores = $this->storeManager->getStores(true);
+        $customerGroups = $this->getCustomerGroups();
+
+        foreach ($stores as $store) {
+            foreach ($customerGroups as $customerGroup) {
+                $cacheIdentifier = implode('|',  ['getCategorySearchQuery', $store->getId(), $category->getId(), $customerGroup->getId()]);
+                $this->cache->remove($cacheIdentifier);
+            }
+        }
+    }
+
+    protected function getCustomerGroups(): array
+    {
+        if ($this->customerGroups !== null) {
+            return $this->customerGroups;
+        }
+
+        $collection = $this->customerGroupCollectionFactory->create();
+        $this->customerGroups = $collection->getItems();
+
+        return $this->customerGroups;
+    }
+
     protected function reindexCategoryProduct(): void
     {
         foreach ($this->categoryIds as $categoryId) {
