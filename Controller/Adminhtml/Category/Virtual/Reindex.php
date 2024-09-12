@@ -39,7 +39,7 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
     public function execute()
     {
         if ($this->configuration->isEnabled()) {
-            $responseData = $this->forceReindexRequiredStatus();
+            $responseData = $this->forceReindex();
         } else {
             $responseData = [
                 'message' => __('Virtual category indexer is disabled. Enable it in <a href="%1" target="_blank">configuration</a>.', $this->getConfigurationUrl())
@@ -49,19 +49,6 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
         $resultJson = $this->jsonFactory->create();
 
         return $resultJson->setData($responseData);
-    }
-
-    protected function forceReindexRequiredStatus(): array
-    {
-        if (!$this->configuration->isEnabled()) {
-            $responseData = [
-                'message' => __('Forcing reindex was not successful.')
-            ];
-        } else {
-            $responseData = $this->forceReindex();
-        }
-
-        return $responseData;
     }
 
     protected function forceReindex(): array
