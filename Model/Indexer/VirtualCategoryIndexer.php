@@ -84,7 +84,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $categoryIds = $this->categoryCollectionFactory->create()->getAllVirtualCategoryIds();
 
         foreach ($categoryIds as $categoryId) {
-            $this->reindex((int) $categoryId);
+            $this->reindex((int)$categoryId);
         }
     }
 
@@ -99,7 +99,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         }
 
         foreach ($categoryIds as $categoryId) {
-            $this->reindex((int) $categoryId);
+            $this->reindex((int)$categoryId);
         }
 
         $this->reindexCategoryProduct();
@@ -115,7 +115,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             return;
         }
 
-        $this->reindex($categoryId);
+        $this->reindex((int)$categoryId);
         $this->reindexCategoryProduct();
     }
 
@@ -130,7 +130,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             $currentProductIds = $this->catalogCategoryProductResourceModel->reindexVirtualCategory($category);
 
             if ($oldProductIds && $currentProductIds) {
-                $currentProductIds =  array_unique(array_merge($oldProductIds, $currentProductIds));
+                $currentProductIds = array_unique(array_merge($oldProductIds, $currentProductIds));
             }
 
             if ($currentProductIds) {
@@ -181,7 +181,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
 
         foreach ($stores as $store) {
             foreach ($customerGroups as $customerGroup) {
-                $cacheIdentifier = implode('|',  ['getCategorySearchQuery', $store->getId(), $category->getId(), $customerGroup->getId()]);
+                $cacheIdentifier = implode('|', ['getCategorySearchQuery', $store->getId(), $category->getId(), $customerGroup->getId()]);
                 $this->cache->remove($cacheIdentifier);
             }
         }
