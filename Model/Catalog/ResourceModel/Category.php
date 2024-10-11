@@ -6,20 +6,9 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceMod
 
 class Category
 {
-    /**
-     * @var \Magento\Eav\Model\AttributeRepository
-     */
-    protected $attributeRepository;
-
-    /**
-     * @var \Magento\Framework\App\ResourceConnection
-     */
-    protected $connection;
-
-    /**
-     * @var \Magento\Framework\EntityManager\MetadataPool
-     */
-    protected $metadataPool;
+    protected \Magento\Eav\Model\AttributeRepository $attributeRepository;
+    protected \Magento\Framework\App\ResourceConnection $connection;
+    protected \Magento\Framework\EntityManager\MetadataPool $metadataPool;
 
     public function __construct(
         \Magento\Eav\Model\AttributeRepository $attributeRepository,
@@ -31,12 +20,6 @@ class Category
         $this->metadataPool = $metadataPool;
     }
 
-    /**
-     * @param $category
-     * @param int $status
-     * @return bool
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     */
     public function setReindexRequired(\Magento\Catalog\Api\Data\CategoryInterface $category, bool $status = true): bool
     {
         $attribute = $this->attributeRepository->get(
@@ -74,11 +57,6 @@ class Category
         }
     }
 
-    /**
-     * Return true if category in some store is active
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     * @return bool
-     */
     public function getIsActiveInSomeStore(\Magento\Catalog\Api\Data\CategoryInterface $category): bool
     {
         $isActiveAttribute = $category->getResource()->getAttribute('is_active');
@@ -93,13 +71,9 @@ class Category
             ->where(sprintf('%s = ?', $linkField), $category->getRowId() ?? $category->getId())
             ->where('value = 1');
 
-        return (bool) $connection->fetchOne($select);
+        return (bool)$connection->fetchOne($select);
     }
 
-    /**
-     * @param int $categoryId
-     * @return int
-     */
     public function getFirstStoreId(int $categoryId): int
     {
         $connection = $this->connection->getConnection();
@@ -120,6 +94,6 @@ class Category
             )
             ->limit(1);
 
-        return (int) $connection->fetchOne($select);
+        return (int)$connection->fetchOne($select);
     }
 }
