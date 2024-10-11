@@ -12,7 +12,6 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
     protected ?array $oldProductsIds = null;
 
     protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
-
     protected \Smile\ElasticsuiteVirtualCategory\Model\PreviewFactory $virtualCategoryPreviewFactory;
 
     public function __construct(
@@ -132,7 +131,6 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
         $parentCategories = $category->getParentCategories();
 
         foreach ($parentCategories as $parentCategory) {
-
             if ($parentCategory->getId() == $category->getId()) {
                 continue;
             }

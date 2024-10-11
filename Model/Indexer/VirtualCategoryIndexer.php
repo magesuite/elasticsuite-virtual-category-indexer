@@ -21,14 +21,13 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
     protected \Magento\Store\Model\StoreManagerInterface $storeManager;
     protected \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory;
     protected \Magento\Framework\App\CacheInterface $cache;
+    protected \Smile\ElasticsuiteVirtualCategory\Helper\Config $virtualCategoryConfig;
     protected \Psr\Log\LoggerInterface $logger;
 
     /** @var int[] */
     protected array $categoryIds = [];
-
     /** @var int[] */
     protected array $productIds = [];
-
     protected ?array $customerGroups = null;
 
     public function __construct(
@@ -42,6 +41,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
         \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory,
         \Magento\Framework\App\CacheInterface $cache,
+        \Smile\ElasticsuiteVirtualCategory\Helper\Config $virtualCategoryConfig,
         \Psr\Log\LoggerInterface $logger
     ) {
         $this->catalogCategoryModel = $catalogCategoryModel;
@@ -54,13 +54,10 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $this->storeManager = $storeManager;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
         $this->cache = $cache;
+        $this->virtualCategoryConfig = $virtualCategoryConfig;
         $this->logger = $logger;
     }
 
-    /*
-     * Used by mview, allows process indexer in the "Update on schedule" mode
-     * @return void
-     */
     public function execute($categoryIds)
     {
         if (!$this->configuration->isEnabled()) {
@@ -70,11 +67,6 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $this->executeList($categoryIds);
     }
 
-    /*
-     * Will take all of the data and reindex
-     * Will run when reindex via command line
-     * @return void
-     */
     public function executeFull()
     {
         if (!$this->configuration->isEnabled()) {
@@ -88,10 +80,6 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         }
     }
 
-    /*
-     * Works with a set of entity changed (may be massaction)
-     * @return void
-     */
     public function executeList(array $categoryIds)
     {
         if (!$this->configuration->isEnabled()) {
@@ -105,10 +93,6 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $this->reindexCategoryProduct();
     }
 
-    /*
-     * Works in runtime for a single entity using plugins
-     * @return null|array
-     */
     public function executeRow($categoryId)
     {
         if (!$this->configuration->isEnabled()) {
@@ -153,12 +137,6 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         }
     }
 
-    /**
-     * Category initialization withoud load from database
-     * @param int $categoryId
-     * @return \Magento\Catalog\Api\Data\CategoryInterface
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     */
     protected function getCategory(int $categoryId): \Magento\Catalog\Api\Data\CategoryInterface
     {
         $storeId = $this->categoryResourceModel->getFirstStoreId($categoryId);
@@ -181,7 +159,15 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
 
         foreach ($stores as $store) {
             foreach ($customerGroups as $customerGroup) {
-                $cacheIdentifier = implode('|', ['getCategorySearchQuery', $store->getId(), $category->getId(), $customerGroup->getId()]);
+                $cacheIdentifier = implode(
+                    '|',
+                    [
+                        'getCategorySearchQuery',
+                        $store->getId(),
+                        $category->getId(),
+                        $customerGroup->getId(),
+                        $this->virtualCategoryConfig->isForceZeroResultsForDisabledCategoriesEnabled($store->getId())
+                    ]);
                 $this->cache->remove($cacheIdentifier);
             }
         }
