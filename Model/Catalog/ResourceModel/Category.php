@@ -27,7 +27,6 @@ class Category
             \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE
         );
         $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class)->getLinkField();
-
         $tableName = $attribute->getBackend()->getTable();
 
         try {
@@ -35,16 +34,11 @@ class Category
                 ? \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED
                 : \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_NOT_REQUIRED;
 
-            $category->setData(
-                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE,
-                $status
-            );
+            $category->setData(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE, $status);
 
             $this->connection->getConnection()->update(
                 $tableName,
-                [
-                    'value' => (int) $status
-                ],
+                ['value' => (int)$status],
                 [
                     sprintf('%s = ?', $linkField) => $category->getId(),
                     'attribute_id = ?' => $attribute->getId(),

@@ -6,56 +6,31 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category;
 
 class ReindexOnChange
 {
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category
-     */
-    protected $categoryResourceModel;
-
-    public $productIds;
-
-    /**
-     * @var \Magento\Framework\Indexer\IndexerRegistry
-     */
-    protected $indexerRegistry;
-
-    /**
-     * @var \Magento\Catalog\Model\ResourceModel\CategoryProduct
-     */
-    protected $catalogCategoryResourceModel;
-
-    /**
-     * @var \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler
-     */
-    protected $saveHandler;
+    protected \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryResourceModel;
+    protected \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry;
+    protected \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler $saveHandler;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel;
 
     public function __construct(
-        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
         \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryResourceModel,
         \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
-        \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler $saveHandler
+        \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler $saveHandler,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel
     ) {
         $this->catalogCategoryResourceModel = $catalogCategoryResourceModel;
-        $this->categoryResourceModel = $categoryResourceModel;
         $this->indexerRegistry = $indexerRegistry;
         $this->saveHandler = $saveHandler;
+        $this->categoryResourceModel = $categoryResourceModel;
     }
 
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $subject
-     * @return void
-     */
-    public function beforeReindex(\Magento\Catalog\Api\Data\CategoryInterface $subject)
+    public function beforeReindex(\Magento\Catalog\Api\Data\CategoryInterface $subject): void
     {
         $isScheduled = $this->getIndexer()->isScheduled();
-        $isVirtual = (bool) $subject->getIsVirtualCategory() === true && ($subject->getId());
+        $isVirtual = (bool)$subject->getIsVirtualCategory() === true && ($subject->getId());
 
-        $shouldBeReindex = $subject->getData(
-            \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE
-        );
+        $shouldBeReindex = $subject->getData(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE);
 
         if ($isVirtual && !$isScheduled && $shouldBeReindex) {
-
-            $this->catalogCategoryResourceModel->setOldProductsIds($this->productIds);
             $this->getIndexer()->reindexRow($subject->getId());
 
             $subject->setIsChangedProductList(true);
@@ -64,11 +39,7 @@ class ReindexOnChange
         }
     }
 
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $subject
-     * @return void
-     */
-    public function beforeSave(\Magento\Catalog\Api\Data\CategoryInterface $subject)
+    public function beforeSave(\Magento\Catalog\Api\Data\CategoryInterface $subject): void
     {
         $category = clone $subject;
         $this->saveHandler->execute($category);
@@ -82,12 +53,7 @@ class ReindexOnChange
         }
     }
 
-    /**
-     * Retrieve VirtualCategoryIndexer indexer.
-     *
-     * @return \Magento\Framework\Indexer\IndexerInterface
-     */
-    protected function getIndexer()
+    protected function getIndexer(): \Magento\Framework\Indexer\IndexerInterface
     {
         return $this->indexerRegistry->get(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Indexer\VirtualCategoryIndexer::INDEXER_ID);
     }

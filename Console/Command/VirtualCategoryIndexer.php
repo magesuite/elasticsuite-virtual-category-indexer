@@ -76,7 +76,7 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
 
         if (!$configuration->isEnabled()) {
             $output->writeln("Module is disabled in store configuration");
-            return 0;
+            return \Magento\Framework\Console\Cli::RETURN_SUCCESS;
         }
 
         try {
@@ -85,14 +85,14 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
                 [$this, 'runIndexer'],
                 [$input, $output]
             );
-
-            return 1;
         } catch (\InvalidArgumentException | \Exception $e) {
             $output->writeln($e->getMessage());
             $this->logger->critical($e->getMessage(), ['exception' => $e]);
+
+            return \Magento\Framework\Console\Cli::RETURN_FAILURE;
         }
 
-        return 0;
+        return \Magento\Framework\Console\Cli::RETURN_SUCCESS;
     }
 
     /**

@@ -6,27 +6,15 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtua
 
 class GetCategorySearchQuery
 {
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration
-     */
-    protected $configuration;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
 
     public function __construct(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration)
     {
         $this->configuration = $configuration;
     }
 
-    /**
-     * @param \Smile\ElasticsuiteVirtualCategory\Model\Rule $subject
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     * @param array $excludedCategories
-     * @return array
-     */
-    public function beforeGetCategorySearchQuery(
-        \Smile\ElasticsuiteVirtualCategory\Model\Rule $subject,
-        $category,
-        array $excludedCategories = []
-    ) {
+    public function beforeGetCategorySearchQuery(\Smile\ElasticsuiteVirtualCategory\Model\Rule $subject, $category, array $excludedCategories = [])
+    {
         if (!is_object($category)) {
             return [$category, $excludedCategories];
         }
@@ -38,9 +26,6 @@ class GetCategorySearchQuery
         return [$category, $excludedCategories];
     }
 
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     */
     protected function convertIsVirtualCategoryAttributeToNullIfIsVirtualQueryFalse(\Magento\Catalog\Api\Data\CategoryInterface $category): void
     {
         $extensionAttributes = $category->getExtensionAttributes();

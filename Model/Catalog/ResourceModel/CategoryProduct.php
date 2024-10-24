@@ -6,10 +6,7 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceMod
 
 class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProduct
 {
-    /**
-     * Product ids before category reindexed
-     */
-    protected ?array $oldProductsIds = null;
+    protected array $oldProductsIds = [];
 
     protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
     protected \Smile\ElasticsuiteVirtualCategory\Model\PreviewFactory $virtualCategoryPreviewFactory;
@@ -26,13 +23,7 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
         $this->virtualCategoryPreviewFactory = $virtualCategoryPreviewFactory;
     }
 
-    /**
-     * @param int $categoryId
-     * @return array
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     */
-    public function reindexVirtualCategory(\Magento\Catalog\Api\Data\CategoryInterface $category)
+    public function reindexVirtualCategory(\Magento\Catalog\Api\Data\CategoryInterface $category): array
     {
         if (!$category->getIsVirtualCategory()) {
             return [];
@@ -46,36 +37,29 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
 
         $products = $this->getProducts($category);
 
-        $data = $this->getProductsToInsert($products, $category->getId());
+        $data = $this->getProductsToInsert($products, (int)$category->getId());
 
-        if ($data) {
-            $connection->insertMultiple($tableName, $data);
+        if (!$data) {
+            return [];
         }
 
-        return $this->getProductsIds($category->getId());
+        $connection->insertMultiple($tableName, $data);
+
+        return array_column($data, 'product_id');
     }
 
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     * @return array
-     */
-    protected function getProducts(\Magento\Catalog\Api\Data\CategoryInterface $category)
+    protected function getProducts(\Magento\Catalog\Api\Data\CategoryInterface $category): array
     {
         $previewModel = $this->virtualCategoryPreviewFactory->create(['category' => $category, 'size' => 0, 'search' => '']);
         $size = $previewModel->getRawData(true)['size'];
 
         $previewModel = $this->virtualCategoryPreviewFactory->create(['category' => $category, 'size' => $size, 'search' => '']);
-        $products  = $previewModel->getRawData(true)['products'];
+        $products = $previewModel->getRawData(true)['products'];
 
         return $products;
     }
 
-    /**
-     * @param array $products
-     * @param int $categoryId
-     * @return array
-     */
-    protected function getProductsToInsert(array $products, $categoryId): array
+    protected function getProductsToInsert(array $products, int $categoryId): array
     {
         $data = [];
 
@@ -89,12 +73,7 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
         return $data;
     }
 
-    /**
-     * @param string|int $categoryId
-     * @return array
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function getProductsIds($categoryId)
+    public function getProductsIds(int $categoryId): array
     {
         $tableName = $this->getMainTable();
         $connection = $this->getConnection();
@@ -104,28 +83,6 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
         return $connection->fetchCol($query);
     }
 
-    /**
-     * @param $productsIds
-     * @return void
-     */
-    public function setOldProductsIds($productsIds)
-    {
-        $this->oldProductsIds = $productsIds;
-    }
-
-    /**
-     * @return array
-     */
-    public function getOldProductIds()
-    {
-        return $this->oldProductsIds;
-    }
-
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     * @param bool $isActive
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
     public function assignProductsToParentCategory(\Magento\Catalog\Api\Data\CategoryInterface $category, bool $isActive): void
     {
         $parentCategories = $category->getParentCategories();
@@ -143,11 +100,6 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
         }
     }
 
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $parentCategory
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
     protected function removeVirtualCategoryProductsFromParentCategory(
         \Magento\Catalog\Api\Data\CategoryInterface $parentCategory,
         \Magento\Catalog\Api\Data\CategoryInterface $category
@@ -160,11 +112,6 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
         $connection->delete($this->getMainTable(), $cond);
     }
 
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $parentCategory
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
     protected function addVirtualCategoryProductsToParentCategory(
         \Magento\Catalog\Api\Data\CategoryInterface $parentCategory,
         \Magento\Catalog\Api\Data\CategoryInterface $category
@@ -179,28 +126,20 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
         $connection->insertMultiple($this->getMainTable(), $products);
     }
 
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $parentCategory
-     * @param \Magento\Catalog\Api\Data\CategoryInterface $category
-     * @return array
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
     protected function getVirtualCategoryProducts(
         \Magento\Catalog\Api\Data\CategoryInterface $parentCategory,
         \Magento\Catalog\Api\Data\CategoryInterface $category
     ): array {
         $connection = $this->getConnection();
 
-        $categories = [$parentCategory->getId(), $category->getId()];
-
-        $select = $connection->select()->from($this->getMainTable() . ' as e')
+        $select = $connection->select()->from(['e' => $this->getMainTable()])
             ->joinLeft(
-                $this->getMainTable() . ' as e2',
-                $connection->quoteInto('e2.category_id = ? and e2.product_id = e.product_id', $parentCategory->getId()),
+                ['e2' => $this->getMainTable()],
+                $connection->quoteInto('e2.category_id = ? AND e2.product_id = e.product_id', $parentCategory->getId()),
                 ''
             )
             ->where('e.category_id = ?', $category->getId())
-            ->where('e2.product_id is null');
+            ->where('e2.product_id IS NULL');
 
         $products = $connection->fetchAll($select);
 
@@ -213,10 +152,6 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
         return $products;
     }
 
-    /**
-     * @param \Magento\Catalog\Api\Data\CategoryProductLinkInterface $productLink
-     * @return bool
-     */
     public function isRelatedToVirtualCategory(\Magento\Catalog\Api\Data\CategoryProductLinkInterface $productLink): bool
     {
         $connection = $this->getConnection();
@@ -231,6 +166,6 @@ class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProdu
             )
             ->where('category_id = ?', $productLink->getCategoryId());
 
-        return (bool) $connection->fetchOne($select);
+        return (bool)$connection->fetchOne($select);
     }
 }
