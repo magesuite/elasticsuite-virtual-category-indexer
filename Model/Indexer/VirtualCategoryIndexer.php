@@ -107,33 +107,31 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
     {
         try {
             $category = $this->getCategory($categoryId);
-            $this->categoryResourceModel->setReindexRequired($category);
+            $category->setData(
+                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE,
+                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED
+            );
 
             $this->clearCategorySearchQueryCache($category);
-            $oldProductIds = $this->catalogCategoryProductResourceModel->getOldProductIds();
             $currentProductIds = $this->catalogCategoryProductResourceModel->reindexVirtualCategory($category);
-
-            if ($oldProductIds && $currentProductIds) {
-                $currentProductIds = array_unique(array_merge($oldProductIds, $currentProductIds));
-            }
 
             if ($currentProductIds) {
                 $this->productIds = array_unique(array_merge($this->productIds, $currentProductIds));
             }
 
             $this->categoryIds[] = $categoryId;
+
+            if ($this->configuration->shouldAssignProductsToParentCategories()) {
+                $isActive = $this->categoryResourceModel->getIsActiveInSomeStore($category);
+                $this->catalogCategoryProductResourceModel->assignProductsToParentCategory($category, $isActive);
+            }
+
+            $category->setData(
+                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE,
+                \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_NOT_REQUIRED
+            );
         } catch (\Exception $e) {
             $this->logger->critical(sprintf('Error during virtual category reindex, categoryId %s, error %s', $categoryId, $e->getMessage()));
-            $this->categoryResourceModel->setReindexRequired($category, true);
-        } finally {
-            if (isset($category)) {
-                if ($this->configuration->shouldAssignProductsToParentCategories()) {
-                    $isActive = $this->categoryResourceModel->getIsActiveInSomeStore($category);
-                    $this->catalogCategoryProductResourceModel->assignProductsToParentCategory($category, $isActive);
-                }
-
-                $this->categoryResourceModel->setReindexRequired($category, false);
-            }
         }
     }
 

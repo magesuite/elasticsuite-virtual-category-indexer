@@ -10,10 +10,9 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Test\Integration\Plugin\C
  */
 class RestoreCategoryPostedProductsTest extends \PHPUnit\Framework\TestCase
 {
+    protected ?\Magento\Framework\App\ObjectManager $objectManager;
     protected ?\Magento\Catalog\Model\CategoryRepository $categoryRepository;
-
     protected ?\Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryProductResource;
-
     protected ?\Magento\Catalog\Model\ResourceModel\Category $categoryResource;
 
     public function setUp(): void

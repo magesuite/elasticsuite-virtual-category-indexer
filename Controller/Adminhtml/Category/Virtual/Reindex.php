@@ -55,11 +55,9 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
     {
         try {
             $categoryId = $this->getRequest()->getParam('id');
-
             $category = $this->categoryRepository->get($categoryId, \Magento\Store\Model\Store::DEFAULT_STORE_ID);
 
             $this->categoryResourceModel->setReindexRequired($category);
-
             $category->save();
 
             $responseData = [

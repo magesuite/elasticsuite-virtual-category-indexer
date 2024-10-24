@@ -42,15 +42,16 @@ class DeleteVirtualCategoryProductsRelations extends \Symfony\Component\Console\
     protected function execute(\Symfony\Component\Console\Input\InputInterface $input, \Symfony\Component\Console\Output\OutputInterface $output): int
     {
         $delete = $this->getParam($input, $output, self::QUESTION_IF_DELETE_PARAM_NAME, self::QUESTION_IF_DELETE);
+        $message = '<info>Virtual category relations have not been deleted</info>';
 
         if ($delete === 'yes') {
             $result = $this->categoryProductRelationsResourceModel->deleteAll();
-            $output->writeln(sprintf('<info>Virtual category relations (%s) have been deleted</info>', $result));
-        } else {
-            $output->writeln('<info>Virtual category relations have not been deleted</info>');
+            $message = sprintf('<info>Virtual category relations (%s) have been deleted</info>', $result);
         }
 
-        return 1;
+        $output->writeln($message);
+
+        return \Magento\Framework\Console\Cli::RETURN_SUCCESS;
     }
 
     protected function getParam( // phpcs:ignore

@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
-<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="catalog_category_product" resource="default" engine="innodb" comment="Catalog Category Product Table">
         <column xsi:type="int" name="virtual_category_id" unsigned="true" nullable="true" identity="false" comment="Virtual Category ID"/>
+        <index referenceId="CATALOG_CATEGORY_PRODUCT_VIRTUAL_CATEGORY_ID" indexType="btree">
+            <column name="virtual_category_id"/>
+        </index>
     </table>
 </schema>

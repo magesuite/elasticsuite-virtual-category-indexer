@@ -6,19 +6,13 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Observer;
 
 class RemoveVirtualProductFromParentCategories implements \Magento\Framework\Event\ObserverInterface
 {
-    /**
-     * @var \Magento\Framework\App\ResourceConnection
-     */
-    protected $connection;
+    protected \Magento\Framework\DB\Adapter\AdapterInterface $connection;
 
     public function __construct(\Magento\Framework\App\ResourceConnection $connection)
     {
         $this->connection = $connection->getConnection();
     }
 
-    /**
-     * @param \Magento\Framework\Event\Observer $observer
-     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $category = $observer->getCategory();
