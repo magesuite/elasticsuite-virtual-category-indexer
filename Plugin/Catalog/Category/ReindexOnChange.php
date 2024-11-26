@@ -6,36 +6,32 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category;
 
 class ReindexOnChange
 {
-    protected \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryResourceModel;
-    protected \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry;
     protected \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler $saveHandler;
-    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel;
+
+    protected bool $shouldReindex = false;
 
     public function __construct(
-        \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryResourceModel,
-        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
         \Smile\ElasticsuiteVirtualCategory\Model\Category\Attribute\VirtualRule\SaveHandler $saveHandler,
-        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel
     ) {
-        $this->catalogCategoryResourceModel = $catalogCategoryResourceModel;
-        $this->indexerRegistry = $indexerRegistry;
         $this->saveHandler = $saveHandler;
-        $this->categoryResourceModel = $categoryResourceModel;
+        $this->virtualCategoryIndexerResourceModel = $virtualCategoryIndexerResourceModel;
     }
 
     public function beforeReindex(\Magento\Catalog\Api\Data\CategoryInterface $subject): void
     {
-        $isScheduled = $this->getIndexer()->isScheduled();
+        $isScheduled = $this->virtualCategoryIndexerResourceModel->getIndexer()->isScheduled();
         $isVirtual = (bool)$subject->getIsVirtualCategory() === true && ($subject->getId());
 
-        $shouldBeReindex = $subject->getData(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE);
-
-        if ($isVirtual && !$isScheduled && $shouldBeReindex) {
-            $this->getIndexer()->reindexRow($subject->getId());
+        if (!$isScheduled && $isVirtual && $this->shouldReindex) {
+            $this->virtualCategoryIndexerResourceModel->getIndexer()->reindexRow($subject->getId());
 
             $subject->setIsChangedProductList(true);
             $subject->setAffectedProductIds($subject->getAffectedProductIds());
             $subject->setOrigData('is_virtual_category', 0);
+
+            $this->shouldReindex = false;
         }
     }
 
@@ -46,15 +42,9 @@ class ReindexOnChange
 
         $virtualRuleChanged = $subject->getOrigData('virtual_rule') <=> $category->getData('virtual_rule');
         $virtualCategoryRootChanged = $subject->getOrigData('virtual_category_root') <=> $subject->getData('virtual_category_root');
-        $shouldBeReindex = $virtualRuleChanged || $virtualCategoryRootChanged;
 
-        if ($shouldBeReindex) {
-            $this->categoryResourceModel->setReindexRequired($subject);
+        if ($virtualRuleChanged || $virtualCategoryRootChanged) {
+            $this->shouldReindex = true;
         }
-    }
-
-    protected function getIndexer(): \Magento\Framework\Indexer\IndexerInterface
-    {
-        return $this->indexerRegistry->get(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Indexer\VirtualCategoryIndexer::INDEXER_ID);
     }
 }

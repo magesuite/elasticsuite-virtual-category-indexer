@@ -6,8 +6,6 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceMod
 
 class CategoryProduct extends \Magento\Catalog\Model\ResourceModel\CategoryProduct
 {
-    protected array $oldProductsIds = [];
-
     protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
     protected \Smile\ElasticsuiteVirtualCategory\Model\PreviewFactory $virtualCategoryPreviewFactory;
 

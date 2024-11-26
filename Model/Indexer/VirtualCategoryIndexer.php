@@ -11,59 +11,53 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
      */
     public const INDEXER_ID = 'elasticsuite_virtual_category';
 
-    protected \Magento\Catalog\Model\Category $catalogCategoryModel;
-    protected \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryProductResourceModel;
-    protected \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory;
     protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
-    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel;
-    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
-    protected \Magento\Indexer\Model\IndexerFactory $indexerFactory;
-    protected \Magento\Store\Model\StoreManagerInterface $storeManager;
+    protected \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory;
     protected \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory;
+    protected \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry;
+    protected \Magento\Store\Model\StoreManagerInterface $storeManager;
     protected \Magento\Framework\App\CacheInterface $cache;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\CategoryProduct $catalogCategoryProductResourceModel;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel;
     protected \Smile\ElasticsuiteVirtualCategory\Helper\Config $virtualCategoryConfig;
     protected \Psr\Log\LoggerInterface $logger;
-
-    /** @var int[] */
+    
     protected array $categoryIds = [];
-    /** @var int[] */
     protected array $productIds = [];
-    protected ?array $customerGroups = null;
+    protected array $customerGroups = [];
 
     public function __construct(
-        \Magento\Catalog\Model\Category $catalogCategoryModel,
         \Magento\Catalog\Model\CategoryRepository $categoryRepository,
         \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
-        \Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryProductResourceModel,
-        \Magento\Indexer\Model\IndexerFactory $indexerFactory,
+        \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory,
+        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Framework\App\CacheInterface $cache,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
-        \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory,
-        \Magento\Framework\App\CacheInterface $cache,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\CategoryProduct $catalogCategoryProductResourceModel,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel,
         \Smile\ElasticsuiteVirtualCategory\Helper\Config $virtualCategoryConfig,
         \Psr\Log\LoggerInterface $logger
     ) {
-        $this->catalogCategoryModel = $catalogCategoryModel;
-        $this->catalogCategoryProductResourceModel = $catalogCategoryProductResourceModel;
-        $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryRepository = $categoryRepository;
-        $this->categoryResourceModel = $categoryResourceModel;
-        $this->configuration = $configuration;
-        $this->indexerFactory = $indexerFactory;
-        $this->storeManager = $storeManager;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
+        $this->indexerRegistry = $indexerRegistry;
+        $this->storeManager = $storeManager;
         $this->cache = $cache;
+        $this->configuration = $configuration;
+        $this->categoryResourceModel = $categoryResourceModel;
+        $this->catalogCategoryProductResourceModel = $catalogCategoryProductResourceModel;
+        $this->virtualCategoryIndexerResourceModel = $virtualCategoryIndexerResourceModel;
         $this->virtualCategoryConfig = $virtualCategoryConfig;
         $this->logger = $logger;
     }
 
     public function execute($categoryIds)
     {
-        if (!$this->configuration->isEnabled()) {
-            return;
-        }
-
         $this->executeList($categoryIds);
     }
 
@@ -73,7 +67,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             return;
         }
 
-        $categoryIds = $this->categoryCollectionFactory->create()->getAllVirtualCategoryIds();
+        $categoryIds = $this->getAllVirtualCategoryIds();
 
         foreach ($categoryIds as $categoryId) {
             $this->reindex((int)$categoryId);
@@ -132,6 +126,10 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             );
         } catch (\Exception $e) {
             $this->logger->critical(sprintf('Error during virtual category reindex, categoryId %s, error %s', $categoryId, $e->getMessage()));
+
+            if ($this->configuration->isRetryEnabled() && $this->virtualCategoryIndexerResourceModel->getIndexer()->isScheduled()) {
+                $this->virtualCategoryIndexerResourceModel->scheduleReindex($categoryId);
+            }
         }
     }
 
@@ -173,7 +171,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
 
     protected function getCustomerGroups(): array
     {
-        if ($this->customerGroups !== null) {
+        if (!empty($this->customerGroups)) {
             return $this->customerGroups;
         }
 
@@ -183,22 +181,32 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         return $this->customerGroups;
     }
 
+    protected function getAllVirtualCategoryIds(): array
+    {
+        $collection = $this->categoryCollectionFactory->create();
+        $collection->addAttributeToFilter('is_virtual_category', ['eq' => 1]);
+
+        $select = $collection->getSelect();
+        $select->reset(\Magento\Framework\DB\Select::COLUMNS);
+        $select->columns('e.' . $collection->getEntity()->getIdFieldName());
+        $select->order('level DESC');
+
+        return $collection->getConnection()->fetchCol($select);
+    }
+
     protected function reindexCategoryProduct(): void
     {
-        foreach ($this->categoryIds as $categoryId) {
-            $indexer = $this->indexerFactory->create();
-            $indexer->load(\Magento\Catalog\Model\Indexer\Category\Product::INDEXER_ID);
-            $indexer->reindexRow($categoryId);
+        $indexer = $this->virtualCategoryIndexerResourceModel->getIndexer();
+        if ($indexer->isScheduled()) {
+            return;
         }
 
-        $indexer = $this->indexerFactory->create();
-        $indexer->load(\Magento\CatalogSearch\Model\Indexer\Fulltext::INDEXER_ID);
-        $indexer->reindexList($this->productIds);
-
-        foreach ($this->categoryIds as $categoryId) {
-            $indexer = $this->indexerFactory->create();
-            $indexer->load(\Smile\ElasticsuiteCatalog\Model\Category\Indexer\Fulltext::INDEXER_ID);
-            $indexer->reindexRow($categoryId);
-        }
+        $catalogCategoryProductIndexer = $this->indexerRegistry->get(\Magento\Catalog\Model\Indexer\Category\Product::INDEXER_ID);
+        $catalogSearchFulltextIndexer = $this->indexerRegistry->get(\Magento\CatalogSearch\Model\Indexer\Fulltext::INDEXER_ID);
+        $elasticSuiteCategoriesFulltextIndexer = $this->indexerRegistry->get(\Smile\ElasticsuiteCatalog\Model\Category\Indexer\Fulltext::INDEXER_ID);
+        
+        $catalogCategoryProductIndexer->reindexList($this->categoryIds);
+        $catalogSearchFulltextIndexer->reindexList($this->productIds);
+        $elasticSuiteCategoriesFulltextIndexer->reindexList($this->categoryIds);
     }
 }

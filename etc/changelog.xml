@@ -40,13 +40,20 @@
             <tag version="1.1.19" date="2024-05-20">
                 <entry>
                     <type>FEATURE</type>
-                    <overview>[EVCI] Command to cleanup/revert relationsy</overview>
+                    <overview>[EVCI] Command to cleanup/revert relations</overview>
                 </entry>
             </tag>
             <tag version="1.1.20" date="2024-08-05">
                 <entry>
                     <type>FIX</type>
                     <overview>Catch errors during virtual category reindex</overview>
+                </entry>
+            </tag>
+            <tag version="1.3.0" date="2024-11-22">
+                <entry>
+                    <type>FIX</type>
+                    <overview>Refactoring index process to make it simpler and improve performance</overview>
+                    <ticket_id>IPET-2824</ticket_id>
                 </entry>
             </tag>
         </changelog>

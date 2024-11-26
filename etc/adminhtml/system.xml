@@ -1,29 +1,29 @@
 <?xml version="1.0"?>
-
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <tab id="magesuite" translate="label" sortOrder="300">
             <label>MageSuite</label>
         </tab>
-        <section id="virtual_category_indexer" translate="label" type="text" sortOrder="1010" showInDefault="1" showInWebsite="1" showInStore="0">
+        <section id="virtual_category_indexer" translate="label" type="text" sortOrder="1010" showInDefault="1" showInWebsite="0" showInStore="0">
             <label>Virtual Category Indexer</label>
             <tab>magesuite</tab>
             <resource>MageSuite_ElasticsuiteVirtualCategoryIndexer::config_virtual_category_indexer</resource>
-            <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>General</label>
-                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="0">
-                    <label>Enabled</label>
+                <field id="enabled" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Is Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="schedule" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="schedule" translate="label comment" sortOrder="10" type="text" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Cron schedule</label>
-                    <depends>
-                        <field id="enabled">1</field>
-                    </depends>
                     <comment>Use Crontab Format (Eg. "*/5 * * * *" for every 5 minutes) | https://en.wikipedia.org/wiki/Cron</comment>
                 </field>
-                <field id="assign_products_to_parent_categories" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="0">
+                <field id="retry_enabled" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Is Retry Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If enabled, category indexing will be repeated when the index did not execute correctly.</comment>
+                </field>
+                <field id="assign_products_to_parent_categories" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Assign products to parent categories</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>When this option is enabled indexer will assign parent categories to products</comment>

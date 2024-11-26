@@ -6,36 +6,26 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
 {
     public const ADMIN_RESOURCE = 'MageSuite_ElasticsuiteVirtualCategoryIndexer::config_virtual_category_indexer';
 
-    protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
-
-    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel;
-
+    protected \Magento\Backend\Model\Url $urlBuilder;
+    protected \Magento\Framework\Controller\Result\JsonFactory $jsonFactory;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel;
     protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
 
-    protected \Magento\Framework\Controller\Result\JsonFactory $jsonFactory;
-
-    protected \Magento\Backend\Model\Url $urlBuilder;
-
     public function __construct(
-        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration,
-        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
         \Magento\Backend\App\Action\Context $context,
         \Magento\Backend\Model\Url $urlBuilder,
-        \Magento\Catalog\Model\CategoryRepository $categoryRepository,
-        \Magento\Framework\Controller\Result\JsonFactory $jsonFactory
+        \Magento\Framework\Controller\Result\JsonFactory $jsonFactory,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration
     ) {
-        $this->categoryRepository = $categoryRepository;
-        $this->categoryResourceModel = $categoryResourceModel;
-        $this->configuration = $configuration;
-        $this->jsonFactory = $jsonFactory;
         $this->urlBuilder = $urlBuilder;
+        $this->jsonFactory = $jsonFactory;
+        $this->virtualCategoryIndexerResourceModel = $virtualCategoryIndexerResourceModel;
+        $this->configuration = $configuration;
 
         parent::__construct($context);
     }
 
-    /**
-     * @return \Magento\Framework\Controller\Result\Json
-     */
     public function execute()
     {
         if ($this->configuration->isEnabled()) {
@@ -55,10 +45,13 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
     {
         try {
             $categoryId = $this->getRequest()->getParam('id');
-            $category = $this->categoryRepository->get($categoryId, \Magento\Store\Model\Store::DEFAULT_STORE_ID);
+            $indexer = $this->virtualCategoryIndexerResourceModel->getIndexer();
 
-            $this->categoryResourceModel->setReindexRequired($category);
-            $category->save();
+            if ($indexer->isScheduled()) {
+                $this->virtualCategoryIndexerResourceModel->scheduleReindex((int)$categoryId);
+            } else {
+                $indexer->reindexRow($categoryId);
+            }
 
             $responseData = [
                 'message' => __('Product assignments will be reindexed in the next few minutes.')
@@ -71,7 +64,7 @@ class Reindex extends \Magento\Backend\App\Action implements \Magento\Framework\
         return $responseData;
     }
 
-    public function getConfigurationUrl()
+    public function getConfigurationUrl(): string
     {
         return $this->urlBuilder->getUrl(
             'adminhtml/system_config/edit/section/virtual_category_indexer',

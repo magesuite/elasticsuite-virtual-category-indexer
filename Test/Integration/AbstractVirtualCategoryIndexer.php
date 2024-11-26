@@ -7,7 +7,7 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Test\Integration;
 /**
  * @magentoDbIsolation enabled
  */
-class AbstractVirtualCategoryIndexer extends \PHPUnit\Framework\TestCase
+abstract class AbstractVirtualCategoryIndexer extends \PHPUnit\Framework\TestCase
 {
     protected ?\Magento\Catalog\Model\ResourceModel\CategoryProduct $catalogCategoryProductResource;
     protected ?\MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $catalogCategoryResource;

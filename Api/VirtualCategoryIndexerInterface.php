@@ -15,20 +15,9 @@ interface VirtualCategoryIndexerInterface
     public const VIRTUAL_CATEGORY_REINDEX_REQUIRED = 1;
     public const VIRTUAL_CATEGORY_REINDEX_NOT_REQUIRED = 0;
 
-    /**
-     * @return bool
-     */
-    public function execute();
+    public function execute(): void;
 
-    /**
-     * @param string $strategy
-     * @return VirtualCategoryIndexerInterface
-     */
-    public function setStrategy(string $strategy);
+    public function setStrategy(string $strategy): \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface;
 
-    /**
-     * @param string $strategy
-     * @return VirtualCategoryIndexerInterface
-     */
-    public function setCategoryIds(?array $categoryIds);
+    public function setCategoryIds(?array $categoryIds): \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface;
 }

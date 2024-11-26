@@ -6,47 +6,31 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Service;
 
 class VirtualCategoryIndexer implements \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface
 {
-    /**
-     * @var array
-     */
-    protected $categoryIds;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Indexer\VirtualCategoryIndexer $indexer;
 
-    /**
-     * @var string
-     */
-    protected $strategy;
-
-    /**
-     * @var \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Indexer\VirtualCategoryIndexer
-     */
-    protected $indexer;
-
-    /**
-     * @var array
-     */
-    protected $strategies;
+    protected array $categoryIds;
+    protected array $strategies;
+    protected string $strategy;
 
     public function __construct(
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Indexer\VirtualCategoryIndexer $indexer,
-        $strategies = []
+        array $strategies = []
     ) {
         $this->indexer = $indexer;
         $this->strategies = $strategies;
     }
 
-    /**
-     * @return array
-     */
     public function getStrategies(): array
     {
         return $this->strategies;
     }
 
-    /**
-     * @param string $categoryIds
-     * @return VirtualCategoryIndexer
-     */
-    public function setCategoryIds(?array $categoryIds)
+    public function execute(): void
+    {
+        $this->indexer->{$this->strategy}($this->categoryIds);
+    }
+
+    public function setCategoryIds(?array $categoryIds): \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface
     {
         if ($this->strategy == 'executeRow') {
             $categoryIds = current($categoryIds);
@@ -57,11 +41,7 @@ class VirtualCategoryIndexer implements \MageSuite\ElasticsuiteVirtualCategoryIn
         return $this;
     }
 
-    /**
-     * @param string $strategy
-     * @return VirtualCategoryIndexer
-     */
-    public function setStrategy(string $strategy)
+    public function setStrategy(string $strategy): \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface
     {
         if (!isset($this->strategies[$strategy])) {
             throw new \InvalidArgumentException(__('Unknown strategy model: %s', $strategy));
@@ -70,13 +50,5 @@ class VirtualCategoryIndexer implements \MageSuite\ElasticsuiteVirtualCategoryIn
         $this->strategy = $this->strategies[$strategy];
 
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function execute()
-    {
-        return $this->indexer->{$this->strategy}($this->categoryIds);
     }
 }
