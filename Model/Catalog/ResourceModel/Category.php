@@ -20,37 +20,6 @@ class Category
         $this->metadataPool = $metadataPool;
     }
 
-    public function setReindexRequired(\Magento\Catalog\Api\Data\CategoryInterface $category, bool $status = true): bool
-    {
-        $attribute = $this->attributeRepository->get(
-            \Magento\Catalog\Model\Category::ENTITY,
-            \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE
-        );
-        $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class)->getLinkField();
-        $tableName = $attribute->getBackend()->getTable();
-
-        try {
-            $status = $status
-                ? \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED
-                : \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_NOT_REQUIRED;
-
-            $category->setData(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::VIRTUAL_CATEGORY_REINDEX_REQUIRED_ATTRIBUTE, $status);
-
-            $this->connection->getConnection()->update(
-                $tableName,
-                ['value' => (int)$status],
-                [
-                    sprintf('%s = ?', $linkField) => $category->getId(),
-                    'attribute_id = ?' => $attribute->getId(),
-                ]
-            );
-
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
     public function getIsActiveInSomeStore(\Magento\Catalog\Api\Data\CategoryInterface $category): bool
     {
         $isActiveAttribute = $category->getResource()->getAttribute('is_active');

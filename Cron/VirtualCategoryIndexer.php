@@ -6,25 +6,29 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Cron;
 
 class VirtualCategoryIndexer
 {
+    protected \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry;
     protected \Psr\Log\LoggerInterface $logger;
-    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface $virtualCategoryIndexerService;
 
     public function __construct(
-        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface $virtualCategoryIndexerService,
+        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
         \Psr\Log\LoggerInterface $logger
     ) {
+        $this->indexerRegistry = $indexerRegistry;
         $this->logger = $logger;
-        $this->virtualCategoryIndexerService = $virtualCategoryIndexerService;
     }
 
-    public function execute()
+    public function execute(): void
     {
         try {
-            $this->virtualCategoryIndexerService->setStrategy(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::STRATEGY_FULL)
-                ->execute();
-        } catch (\InvalidArgumentException|\Exception $e) {
+            $indexer = $this->indexerRegistry->get(\MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Indexer\VirtualCategoryIndexer::INDEXER_ID);
+
+            if ($indexer->isScheduled()) {
+                $indexer->invalidate();
+            } else {
+                $indexer->reindexAll();
+            }
+        } catch (\Exception $e) {
             $this->logger->critical($e->getMessage(), ['exception' => $e]);
-            return;
         }
     }
 }

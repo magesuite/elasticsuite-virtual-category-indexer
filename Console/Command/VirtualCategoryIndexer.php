@@ -34,9 +34,6 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         $this->virtualCategoryIndexerServiceFactory = $virtualCategoryIndexerServiceFactory;
     }
 
-    /**
-     * @return void
-     */
     protected function configure()
     {
         $options = [
@@ -62,15 +59,8 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         parent::configure();
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return int|void
-     */
-    protected function execute(
-        \Symfony\Component\Console\Input\InputInterface $input,
-        \Symfony\Component\Console\Output\OutputInterface $output
-    ):int {
+    protected function execute(\Symfony\Component\Console\Input\InputInterface $input, \Symfony\Component\Console\Output\OutputInterface $output): int
+    {
         $this->virtualCategoryIndexerService = $this->virtualCategoryIndexerServiceFactory->create();
         $configuration = $this->configurationFactory->create();
 
@@ -85,7 +75,7 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
                 [$this, 'runIndexer'],
                 [$input, $output]
             );
-        } catch (\InvalidArgumentException | \Exception $e) {
+        } catch (\Exception $e) {
             $output->writeln($e->getMessage());
             $this->logger->critical($e->getMessage(), ['exception' => $e]);
 
@@ -95,30 +85,18 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         return \Magento\Framework\Console\Cli::RETURN_SUCCESS;
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return void
-     */
-    public function runIndexer(
-        \Symfony\Component\Console\Input\InputInterface $input,
-        \Symfony\Component\Console\Output\OutputInterface $output
-    ) {
+    public function runIndexer(\Symfony\Component\Console\Input\InputInterface $input, \Symfony\Component\Console\Output\OutputInterface $output): void
+    {
         $strategy = $this->getStrategy($input, $output);
-        $categoryIds = (array) $this->getCategoryIds($strategy, $input, $output);
+        $categoryIds = (array)$this->getCategoryIds($strategy, $input, $output);
 
         $this->virtualCategoryIndexerService->setStrategy($strategy)
             ->setCategoryIds($categoryIds)
             ->execute();
     }
 
-    /**
-     * @return string
-     */
-    protected function getStrategy(
-        \Symfony\Component\Console\Input\InputInterface $input,
-        \Symfony\Component\Console\Output\OutputInterface $output
-    ) {
+    protected function getStrategy(\Symfony\Component\Console\Input\InputInterface $input, \Symfony\Component\Console\Output\OutputInterface $output): string
+    {
         $strategy = $input->getOption(static::OPTION_INDEXER_STRATEGY);
 
         if (!$strategy) {
@@ -140,15 +118,8 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         return $strategy;
     }
 
-    /**
-     * @param string|null $strategy
-     * @return array|null
-     */
-    protected function getCategoryIds(
-        ?string $strategy,
-        \Symfony\Component\Console\Input\InputInterface $input,
-        \Symfony\Component\Console\Output\OutputInterface $output
-    ): ?array {
+    protected function getCategoryIds(?string $strategy, \Symfony\Component\Console\Input\InputInterface $input, \Symfony\Component\Console\Output\OutputInterface $output): ?array
+    {
         if (!$strategy || $strategy === \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface::STRATEGY_FULL) {
             return null;
         }
@@ -168,12 +139,6 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         return explode(',', $categoryIds);
     }
 
-    /**
-     * @param string $message
-     * @param string $param
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     */
     protected function callQuestion( // @codingStandardsIgnoreLine
         string $message,
         string $param,
@@ -187,9 +152,6 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
 
         $questionHelper = $this->getHelper('question');
 
-        $input->setOption(
-            $param,
-            $questionHelper->ask($input, $output, $question)
-        );
+        $input->setOption($param, $questionHelper->ask($input, $output, $question));
     }
 }

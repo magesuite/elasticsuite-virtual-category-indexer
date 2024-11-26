@@ -1,23 +1,16 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-
-    <preference for="MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Service\VirtualCategoryIndexer" />
-    <preference for="Magento\Catalog\Model\ResourceModel\Category\Collection"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category\Collection" />
-    <preference for="Magento\Catalog\Model\ResourceModel\CategoryProduct"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\CategoryProduct" />
-    <preference for="Smile\ElasticsuiteVirtualCategory\Controller\Adminhtml\Category\Virtual\Preview"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Controller\Adminhtml\Category\Virtual\Preview" />
-    <preference for="Smile\ElasticsuiteVirtualCategory\Model\Preview"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ElasticsuiteVirtualCategory\Model\Preview" />
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Service\VirtualCategoryIndexer"/>
+    <preference for="Smile\ElasticsuiteVirtualCategory\Controller\Adminhtml\Category\Virtual\Preview" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Controller\Adminhtml\Category\Virtual\Preview"/>
+    <preference for="Smile\ElasticsuiteVirtualCategory\Model\Preview" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ElasticsuiteVirtualCategory\Model\Preview"/>
 
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="magesuite_elasticsuite:virtual_category_indexer" xsi:type="object">MageSuite\ElasticsuiteVirtualCategoryIndexer\Console\Command\VirtualCategoryIndexer</item>
-                <item name="magesuite_elasticsuite:delete_virtual_category_products_relations" xsi:type="object">MageSuite\ElasticsuiteVirtualCategoryIndexer\Console\Command\DeleteVirtualCategoryProductsRelations</item>
+                <item name="magesuite_elasticsuite:delete_virtual_category_products_relations"
+                      xsi:type="object">MageSuite\ElasticsuiteVirtualCategoryIndexer\Console\Command\DeleteVirtualCategoryProductsRelations
+                </item>
             </argument>
         </arguments>
     </type>
@@ -33,39 +26,34 @@
     </type>
 
     <type name="Smile\ElasticsuiteVirtualCategory\Model\Rule">
-        <plugin name="elasticsute_get_search_category_query"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtualCategory\Model\Rule\GetCategorySearchQuery"
-                sortOrder="1"/>
+        <plugin name="elasticsute_get_search_category_query" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtualCategory\Model\Rule\GetCategorySearchQuery" sortOrder="1"/>
     </type>
 
     <type name="Magento\Catalog\Model\Category\DataProvider">
-        <plugin name="add_reindex_url_to_loaded_data"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Model\Category\DataProvider\AddReindexUrlToLoadedData"
-                sortOrder="10"
-        />
+        <plugin name="add_reindex_url_to_loaded_data" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Model\Category\DataProvider\AddReindexUrlToLoadedData" sortOrder="10"/>
     </type>
 
     <type name="Magento\Catalog\Model\Category">
-        <plugin name="magesuite_elasticsuite_virtual_categories_reindex_on_change"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\ReindexOnChange" sortOrder="1" />
+        <plugin name="magesuite_elasticsuite_virtual_categories_reindex_on_change" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\ReindexOnChange" sortOrder="1"/>
     </type>
 
     <type name="Magento\Indexer\Model\Indexer\DependencyDecorator">
         <plugin name="magesuite_elasticsuite_virtual_change_indexer_name_if_disabled"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Indexer\Model\Indexer\DependencyDecorator\ChangeIndexerNameIfDisabled" sortOrder="1" />
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Indexer\Model\Indexer\DependencyDecorator\ChangeIndexerNameIfDisabled" sortOrder="1"/>
     </type>
 
     <type name="Magento\Catalog\Model\CategoryLinkRepository">
         <plugin name="check_if_item_is_related_to_virtual_category"
-                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Model\CategoryLinkRepository\CheckIfExistsItemIsRelatedToVirtualCategory" />
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Model\CategoryLinkRepository\CheckIfExistsItemIsRelatedToVirtualCategory"/>
     </type>
 
     <type name="Smile\ElasticsuiteVirtualCategory\Plugin\Catalog\Category\SaveProductsPositions">
-        <plugin name="store_category_posted_products" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtualCategory\Plugin\Catalog\Category\SaveProductsPositions\StoreCategoryPostedProducts" sortOrder="0" />
+        <plugin name="store_category_posted_products"
+                type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtualCategory\Plugin\Catalog\Category\SaveProductsPositions\StoreCategoryPostedProducts" sortOrder="0"/>
     </type>
 
     <type name="Magento\Catalog\Model\ResourceModel\Category">
-        <plugin name="restore_category_posted_products" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\RestoreCategoryPostedProducts" sortOrder="10" />
+        <plugin name="restore_category_posted_products" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Category\RestoreCategoryPostedProducts" sortOrder="10"/>
     </type>
 
 </config>
