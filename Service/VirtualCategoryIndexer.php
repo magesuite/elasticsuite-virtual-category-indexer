@@ -33,7 +33,7 @@ class VirtualCategoryIndexer implements \MageSuite\ElasticsuiteVirtualCategoryIn
     public function setCategoryIds(?array $categoryIds): \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterface
     {
         if ($this->strategy == 'executeRow') {
-            $categoryIds = current($categoryIds);
+            $categoryIds = [current($categoryIds)];
         }
 
         $this->categoryIds = $categoryIds;
