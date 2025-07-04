@@ -96,9 +96,9 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             return;
         }
 
-        $this->reindex((int)current($categoryId));
+        $this->reindex((int)$categoryId);
         $this->reindexCategoryProduct();
-        $this->cleanCategoryCacheById($categoryId);
+        $this->cleanCategoryCacheById([$categoryId]);
     }
 
     protected function reindex(int $categoryId): void
