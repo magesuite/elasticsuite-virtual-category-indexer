@@ -23,7 +23,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
     protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel;
     protected \Smile\ElasticsuiteVirtualCategory\Helper\Config $virtualCategoryConfig;
     protected \Psr\Log\LoggerInterface $logger;
-    
+
     protected array $categoryIds = [];
     protected array $productIds = [];
     protected array $customerGroups = [];
@@ -68,10 +68,12 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         }
 
         $categoryIds = $this->getAllVirtualCategoryIds();
-
         foreach ($categoryIds as $categoryId) {
             $this->reindex((int)$categoryId);
         }
+
+        $this->reindexCategoryProduct();
+        $this->cleanCategoryCacheById($categoryIds);
     }
 
     public function executeList(array $categoryIds)
@@ -85,6 +87,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         }
 
         $this->reindexCategoryProduct();
+        $this->cleanCategoryCacheById($categoryIds);
     }
 
     public function executeRow($categoryId)
@@ -95,6 +98,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
 
         $this->reindex((int)$categoryId);
         $this->reindexCategoryProduct();
+        $this->cleanCategoryCacheById([$categoryId]);
     }
 
     protected function reindex(int $categoryId): void
@@ -204,9 +208,18 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $catalogCategoryProductIndexer = $this->indexerRegistry->get(\Magento\Catalog\Model\Indexer\Category\Product::INDEXER_ID);
         $catalogSearchFulltextIndexer = $this->indexerRegistry->get(\Magento\CatalogSearch\Model\Indexer\Fulltext::INDEXER_ID);
         $elasticSuiteCategoriesFulltextIndexer = $this->indexerRegistry->get(\Smile\ElasticsuiteCatalog\Model\Category\Indexer\Fulltext::INDEXER_ID);
-        
+
         $catalogCategoryProductIndexer->reindexList($this->categoryIds);
         $catalogSearchFulltextIndexer->reindexList($this->productIds);
         $elasticSuiteCategoriesFulltextIndexer->reindexList($this->categoryIds);
+    }
+
+    protected function cleanCategoryCacheById(array $categoryIds): void
+    {
+        $tags = [];
+        foreach ($categoryIds as $categoryId) {
+            $tags[] = sprintf('cat_c_p_%s', $categoryId);
+        }
+        $this->cache->clean($tags);
     }
 }
