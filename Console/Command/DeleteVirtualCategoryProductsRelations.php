@@ -15,7 +15,7 @@ class DeleteVirtualCategoryProductsRelations extends \Symfony\Component\Console\
 
     public function __construct(
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\CategoryProductRelations $categoryProductRelationsResourceModel,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
 
