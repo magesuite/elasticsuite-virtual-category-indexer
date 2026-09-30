@@ -24,7 +24,7 @@ class VirtualCategoryIndexer extends \Symfony\Component\Console\Command\Command
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Api\VirtualCategoryIndexerInterfaceFactory $virtualCategoryIndexerServiceFactory,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\ConfigurationFactory $configurationFactory,
         \Psr\Log\LoggerInterface $logger,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
 
