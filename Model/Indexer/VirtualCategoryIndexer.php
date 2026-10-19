@@ -13,92 +13,94 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
 
     protected \Magento\Catalog\Model\CategoryRepository $categoryRepository;
     protected \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory;
-    protected \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory;
     protected \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry;
-    protected \Magento\Store\Model\StoreManagerInterface $storeManager;
     protected \Magento\Framework\App\CacheInterface $cache;
     protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration;
     protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel;
     protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\CategoryProduct $catalogCategoryProductResourceModel;
     protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel;
-    protected \Smile\ElasticsuiteVirtualCategory\Helper\Config $virtualCategoryConfig;
+    protected \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ElasticsuiteVirtualCategory\Model\Rule\CategorySearchQueryCache $categorySearchQueryCache;
     protected \Psr\Log\LoggerInterface $logger;
 
     protected array $categoryIds = [];
     protected array $productIds = [];
-    protected array $customerGroups = [];
 
     public function __construct(
         \Magento\Catalog\Model\CategoryRepository $categoryRepository,
         \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
-        \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $customerGroupCollectionFactory,
         \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\App\CacheInterface $cache,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Helper\Configuration\Configuration $configuration,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\Category $categoryResourceModel,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\Catalog\ResourceModel\CategoryProduct $catalogCategoryProductResourceModel,
         \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel\VirtualCategoryIndexer $virtualCategoryIndexerResourceModel,
-        \Smile\ElasticsuiteVirtualCategory\Helper\Config $virtualCategoryConfig,
+        \MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ElasticsuiteVirtualCategory\Model\Rule\CategorySearchQueryCache $categorySearchQueryCache,
         \Psr\Log\LoggerInterface $logger
     ) {
         $this->categoryRepository = $categoryRepository;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
-        $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
         $this->indexerRegistry = $indexerRegistry;
-        $this->storeManager = $storeManager;
         $this->cache = $cache;
         $this->configuration = $configuration;
         $this->categoryResourceModel = $categoryResourceModel;
         $this->catalogCategoryProductResourceModel = $catalogCategoryProductResourceModel;
         $this->virtualCategoryIndexerResourceModel = $virtualCategoryIndexerResourceModel;
-        $this->virtualCategoryConfig = $virtualCategoryConfig;
+        $this->categorySearchQueryCache = $categorySearchQueryCache;
         $this->logger = $logger;
     }
 
-    public function execute($categoryIds)
+    /**
+     * @inheritDoc
+     */
+    public function execute($categoryIds): void
     {
         $this->executeList($categoryIds);
     }
 
-    public function executeFull()
+    public function executeFull(): void
     {
         if (!$this->configuration->isEnabled()) {
             return;
         }
 
-        $categoryIds = $this->getAllVirtualCategoryIds();
-        foreach ($categoryIds as $categoryId) {
-            $this->reindex((int)$categoryId);
+        $this->reindexCategories($this->getAllVirtualCategoryIds());
+    }
+
+    public function executeList(array $categoryIds): void
+    {
+        if (!$this->configuration->isEnabled()) {
+            return;
+        }
+
+        $this->reindexCategories($categoryIds);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function executeRow($categoryId): void
+    {
+        if (!$this->configuration->isEnabled()) {
+            return;
+        }
+
+        $this->reindexCategories([$categoryId]);
+    }
+
+    protected function reindexCategories(array $categoryIds): void
+    {
+        $this->categorySearchQueryCache->startBatch();
+
+        try {
+            foreach ($categoryIds as $categoryId) {
+                $this->reindex((int)$categoryId);
+            }
+        } finally {
+            $this->categorySearchQueryCache->finishBatch();
         }
 
         $this->reindexCategoryProduct();
         $this->cleanCategoryCacheById($categoryIds);
-    }
-
-    public function executeList(array $categoryIds)
-    {
-        if (!$this->configuration->isEnabled()) {
-            return;
-        }
-
-        foreach ($categoryIds as $categoryId) {
-            $this->reindex((int)$categoryId);
-        }
-
-        $this->reindexCategoryProduct();
-        $this->cleanCategoryCacheById($categoryIds);
-    }
-
-    public function executeRow($categoryId)
-    {
-        if (!$this->configuration->isEnabled()) {
-            return;
-        }
-
-        $this->reindex((int)$categoryId);
-        $this->reindexCategoryProduct();
-        $this->cleanCategoryCacheById([$categoryId]);
     }
 
     protected function reindex(int $categoryId): void
@@ -120,7 +122,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
             $this->categoryIds[] = $categoryId;
 
             if ($this->configuration->shouldAssignProductsToParentCategories()) {
-                $isActive = $this->categoryResourceModel->getIsActiveInSomeStore($category);
+                $isActive = $this->categoryResourceModel->isActiveInSomeStore($category);
                 $this->catalogCategoryProductResourceModel->assignProductsToParentCategory($category, $isActive);
             }
 
@@ -144,6 +146,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
 
         $category->setAddedProductIds($category->getAddedProductIds() ?? []);
         $category->setSortedProductIds($category->getSortedProductIds() ?? []);
+        $category->setHasDraftVirtualRule(true);
 
         $extensionAttributes = $category->getExtensionAttributes();
         $extensionAttributes->setVirtualQuery(true);
@@ -154,35 +157,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
 
     public function clearCategorySearchQueryCache(\Magento\Catalog\Api\Data\CategoryInterface $category): void
     {
-        $stores = $this->storeManager->getStores(true);
-        $customerGroups = $this->getCustomerGroups();
-
-        foreach ($stores as $store) {
-            foreach ($customerGroups as $customerGroup) {
-                $cacheIdentifier = implode(
-                    '|',
-                    [
-                        'getCategorySearchQuery',
-                        $store->getId(),
-                        $category->getId(),
-                        $customerGroup->getId(),
-                        $this->virtualCategoryConfig->isForceZeroResultsForDisabledCategoriesEnabled($store->getId())
-                    ]);
-                $this->cache->remove($cacheIdentifier);
-            }
-        }
-    }
-
-    protected function getCustomerGroups(): array
-    {
-        if (!empty($this->customerGroups)) {
-            return $this->customerGroups;
-        }
-
-        $collection = $this->customerGroupCollectionFactory->create();
-        $this->customerGroups = $collection->getItems();
-
-        return $this->customerGroups;
+        $this->categorySearchQueryCache->clean($category);
     }
 
     protected function getAllVirtualCategoryIds(): array
@@ -193,7 +168,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
         $select = $collection->getSelect();
         $select->reset(\Magento\Framework\DB\Select::COLUMNS);
         $select->columns('e.' . $collection->getEntity()->getIdFieldName());
-        $select->order('level DESC');
+        $select->order(['e.level DESC', 'e.entity_id ASC']);
 
         return $collection->getConnection()->fetchCol($select);
     }
