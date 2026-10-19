@@ -89,12 +89,13 @@ class Preview extends \Magento\Backend\App\Action
      *
      * @return \Magento\Catalog\Api\Data\CategoryInterface
      */
-    protected function loadCategory()
+    protected function loadCategory(): \Magento\Catalog\Api\Data\CategoryInterface
     {
         $storeId = $this->getRequest()->getParam('store');
         $categoryId = $this->getRequest()->getParam('entity_id');
 
         $category = $this->categoryRepository->get($categoryId, $storeId);
+        $category->setHasDraftVirtualRule(true);
 
         $extensionAttributes = $category->getExtensionAttributes();
         $extensionAttributes->setVirtualQuery(true);

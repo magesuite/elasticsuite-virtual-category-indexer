@@ -20,7 +20,7 @@ class Category
         $this->metadataPool = $metadataPool;
     }
 
-    public function getIsActiveInSomeStore(\Magento\Catalog\Api\Data\CategoryInterface $category): bool
+    public function isActiveInSomeStore(\Magento\Catalog\Api\Data\CategoryInterface $category): bool
     {
         $isActiveAttribute = $category->getResource()->getAttribute('is_active');
         $tableName = $isActiveAttribute->getBackend()->getTable();
@@ -40,23 +40,56 @@ class Category
     public function getFirstStoreId(int $categoryId): int
     {
         $connection = $this->connection->getConnection();
-        $storeTableName = $connection->getTableName('store');
-        $storeGroupTableName = $connection->getTableName('store_group');
-        $categoryTableName = $connection->getTableName('catalog_category_entity');
+        $storeIdSelect = $this->getStoreIdUnderCategoryRootSelect($categoryId);
+        $activeStoreId = (int)$connection->fetchOne($this->addCategoryIsActiveFilter(clone $storeIdSelect));
 
-        $rootCategoryIdQueryField = new \Zend_Db_Expr('SUBSTRING_INDEX(SUBSTRING(path FROM (LOCATE(\'/\', path)+1)), \'/\', 1) as root_category_id');
-        $rootCategoryIdSelect = $connection->select()->from($categoryTableName, $rootCategoryIdQueryField)
-            ->where('entity_id = ?', $categoryId);
+        if ($activeStoreId) {
+            return $activeStoreId;
+        }
 
-        $select = $connection->select()
-            ->from(['s' => $storeTableName], 's.store_id')
-            ->join(
-                ['sg' => $storeGroupTableName],
-                's.`group_id` = sg.group_id and sg.root_category_id = (' . $rootCategoryIdSelect . ')',
-                ''
-            )
+        return (int)$connection->fetchOne($storeIdSelect);
+    }
+
+    protected function getStoreIdUnderCategoryRootSelect(int $categoryId): \Magento\Framework\DB\Select
+    {
+        $rootCategoryIdExpression = new \Zend_Db_Expr("SUBSTRING_INDEX(SUBSTRING_INDEX(category.path, '/', 2), '/', -1)");
+
+        return $this->connection->getConnection()->select()
+            ->from(['category' => $this->connection->getTableName('catalog_category_entity')], [])
+            ->join(['store_group' => $this->connection->getTableName('store_group')], sprintf('store_group.root_category_id = %s', $rootCategoryIdExpression), [])
+            ->join(['store' => $this->connection->getTableName('store')], 'store.group_id = store_group.group_id', ['store_id'])
+            ->where('category.entity_id = ?', $categoryId)
+            ->order('store.store_id ASC')
             ->limit(1);
+    }
 
-        return (int)$connection->fetchOne($select);
+    protected function addCategoryIsActiveFilter(\Magento\Framework\DB\Select $storeIdSelect): \Magento\Framework\DB\Select
+    {
+        $connection = $this->connection->getConnection();
+        $isActiveAttribute = $this->attributeRepository->get(\Magento\Catalog\Model\Category::ENTITY, 'is_active');
+        $isActiveTableName = $isActiveAttribute->getBackendTable();
+        $attributeId = (int)$isActiveAttribute->getAttributeId();
+
+        return $storeIdSelect
+            ->joinLeft(['store_is_active' => $isActiveTableName], $this->getIsActiveJoinCondition('store_is_active', $attributeId, 'store_is_active.store_id = store.store_id'), [])
+            ->joinLeft(
+                ['default_is_active' => $isActiveTableName],
+                $this->getIsActiveJoinCondition('default_is_active', $attributeId, $connection->quoteInto('default_is_active.store_id = ?', \Magento\Store\Model\Store::DEFAULT_STORE_ID)),
+                []
+            )
+            ->where('store.is_active = ?', 1)
+            ->where('COALESCE(store_is_active.value, default_is_active.value) = ?', 1);
+    }
+
+    protected function getIsActiveJoinCondition(string $tableAlias, int $attributeId, string $storeCondition): string
+    {
+        $connection = $this->connection->getConnection();
+        $linkField = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\CategoryInterface::class)->getLinkField();
+
+        return implode(' AND ', [
+            sprintf('%1$s.%2$s = category.%2$s', $tableAlias, $linkField),
+            $connection->quoteInto(sprintf('%s.attribute_id = ?', $tableAlias), $attributeId),
+            $storeCondition,
+        ]);
     }
 }
