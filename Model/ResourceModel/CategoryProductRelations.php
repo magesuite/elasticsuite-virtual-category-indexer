@@ -6,34 +6,41 @@ namespace MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ResourceModel;
 
 class CategoryProductRelations
 {
+    protected \Magento\Framework\App\ResourceConnection $resourceConnection;
+
     protected \Magento\Framework\DB\Adapter\AdapterInterface $connection;
 
+    protected \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory;
+
     public function __construct(
-        \Magento\Framework\App\ResourceConnection $resourceConnection
+        \Magento\Framework\App\ResourceConnection $resourceConnection,
+        \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory
     ) {
+        $this->resourceConnection = $resourceConnection;
         $this->connection = $resourceConnection->getConnection();
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
     }
 
     public function deleteAll(): int
     {
-        $relationsTableName = $this->connection->getTableName('catalog_category_product');
-        $attributeTableName = $this->connection->getTableName('catalog_category_entity_int');
+        $where = ['virtual_category_id IS NOT NULL'];
+        $virtualCategoryIds = $this->getVirtualCategoryIds();
 
-        $subselect = $this->connection->select()->from(['ea' => $this->connection->getTableName('eav_attribute')], 'attribute_id')
-            ->where('ea.attribute_code = ?', 'is_virtual_category');
+        if (!empty($virtualCategoryIds)) {
+            $where[] = $this->connection->quoteInto('category_id IN (?)', $virtualCategoryIds);
+        }
 
-        $subSelect2 = $this->connection->select()
-            ->from(['ccei' => $attributeTableName], 'entity_id')
-            ->where('ccei.attribute_id = ?', $subselect)
-            ->where('ccei.value = ?', 1);
+        return $this->connection->delete(
+            $this->resourceConnection->getTableName('catalog_category_product'),
+            implode(' OR ', $where)
+        );
+    }
 
-        $select = $this->connection->select()
-            ->from(['ccp' => $attributeTableName], 'entity_id')
-            ->where('attribute_id IN (?)', $subSelect2)
-            ->orWhere('virtual_category_id IS NOT NULL');
+    protected function getVirtualCategoryIds(): array
+    {
+        $collection = $this->categoryCollectionFactory->create();
+        $collection->addAttributeToFilter('is_virtual_category', ['eq' => 1]);
 
-        $where = ['category_id IN (?)' => $select];
-
-        return $this->connection->delete($relationsTableName, $where);
+        return array_map('intval', $collection->getAllIds());
     }
 }
