@@ -10,6 +10,7 @@ $registry->register('isSecureArea', true);
 $productCollection = $objectManager->create(\Magento\Catalog\Model\ResourceModel\Product\Collection::class);
 $productCollection->addAttributeToFilter('sku', 'virtual_root_source_product');
 $productCollection->delete();
+$objectManager->get(\Magento\Catalog\Model\ProductRepository::class)->cleanCache();
 
 $categoryCollection = $objectManager->create(\Magento\Catalog\Model\ResourceModel\Category\Collection::class);
 $categoryCollection->addAttributeToFilter('entity_id', ['in' => [4443, 4442, 4441]]);
