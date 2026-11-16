@@ -25,6 +25,10 @@ class BatchAwareCache implements \Magento\Framework\App\CacheInterface
      */
     public function load($identifier)
     {
+        if ($this->categorySearchQueryCache->isBatchInProgress()) {
+            return false;
+        }
+
         return $this->cache->load($identifier);
     }
 

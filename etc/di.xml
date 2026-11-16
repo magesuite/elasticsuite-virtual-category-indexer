@@ -32,6 +32,12 @@
         <plugin name="elasticsute_get_search_category_query" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\ElasticsuiteVirtualCategory\Model\Rule\GetCategorySearchQuery" sortOrder="1"/>
     </type>
 
+    <type name="Smile\ElasticsuiteVirtualCategory\Helper\Rule">
+        <arguments>
+            <argument name="cache" xsi:type="object">MageSuite\ElasticsuiteVirtualCategoryIndexer\Model\ElasticsuiteVirtualCategory\Model\Rule\BatchAwareCache</argument>
+        </arguments>
+    </type>
+
     <type name="Magento\Catalog\Model\Category\DataProvider">
         <plugin name="add_reindex_url_to_loaded_data" type="MageSuite\ElasticsuiteVirtualCategoryIndexer\Plugin\Catalog\Model\Category\DataProvider\AddReindexUrlToLoadedData" sortOrder="10"/>
     </type>

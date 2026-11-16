@@ -157,7 +157,7 @@ class VirtualCategoryIndexer implements \Magento\Framework\Indexer\ActionInterfa
 
     public function clearCategorySearchQueryCache(\Magento\Catalog\Api\Data\CategoryInterface $category): void
     {
-        $this->categorySearchQueryCache->clean($category);
+        $this->categorySearchQueryCache->resetLocalCache();
     }
 
     protected function getAllVirtualCategoryIds(): array
